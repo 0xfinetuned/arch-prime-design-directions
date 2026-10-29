@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>Arch Prime — design directions</title>
+<html lang="en"><head><meta charset="utf-8"><title>Arch Prime — three directions</title>
 <style>
   @font-face { font-family: "PP Neue Montreal"; font-weight: 400; src: url("shared/fonts/PPNeueMontreal-Book.woff2") format("woff2"); }
   body { margin: 0; padding: 56px 64px; background: #f7f7f7; color: #181818; font: 16px/1.5 "PP Neue Montreal", Helvetica, sans-serif; }
@@ -11,39 +11,19 @@
   a { color: inherit; margin-right: 18px; }
   img { width: 100%; border-radius: 8px; }
 </style></head><body>
-<h1>Arch Prime design, light and dark</h1>
-<section><div><h2>Polish of today's app</h2></div><div>
-  <p>The current web-v2, unchanged in structure and behaviour, polished three ways. Real app, connected with an empty account; every screen in light and dark.</p>
-  <div id="polish"></div></div></section>
-<h1 style="margin-top:56px">Earlier directions</h1>
+<h1>Three directions, light and dark</h1>
 <script>
   const D = [
     ["a", "A · Paper", "The landing's light sections and its black footer: structure from hairlines and space, figures set like headlines, 7×7 LED icons."],
     ["b", "B · Night", "The landing's night and its light twin: lifted panels on hairlines, luminous lines by night, crisp ink by day, LED icons."],
     ["c", "C · Instrument", "The landing's floating product cards as the whole app: instrument cards, frame edges, mono captions, line icons with one orange pixel."],
-    ["d", "D · Hearth", "A warm private-bank lounge: velvet grounds, soft rounded cushion surfaces with warm inner glows, the hero figure on a diffuse orange-to-rose glow, film grain."],
-    ["i", "I · Lumen", "The landing's LED A mark as the whole system: figures as warm glowing dot-matrix numerals on velvet display panels, dot-matrix charts, LED tabs."],
   ];
   const P = [["home", "Home"], ["products", "Prime Yield"], ["prime-btc", "primeBTC"], ["trade", "Trade"], ["lend", "Lend"], ["kit", "Kit"]];
   for (const [d, name, idea] of D) {
     const links = (t) => P.map(([p, l]) => `<a href="${d}/${p}.html?theme=${t}">${l}</a>`).join("");
     document.write(`<section><div><h2>${name}</h2></div><div><p>${idea}</p>
-      <h3>Light — ${links("light")}</h3><img src="shots/${d}-light-overview.webp" alt="${name} light">
-      <h3>Dark — ${links("dark")}</h3><img src="shots/${d}-dark-overview.webp" alt="${name} dark"></div></section>`);
-  }
-  const POL = [
-    ["current", "Today", "The app as it is on main, for reference."],
-    ["refined", "Refined", "Same palette, finished: a clear type scale, one spacing and radius system, cards lifted on a hairline and soft shadow, a faint warm ground, designed empty states."],
-    ["warm", "Warm", "Same structure, warm and colourful: cream and espresso grounds, an orange-to-rose wash on each screen's lead card, a warm active tab, warm chart lines, coin tints."],
-    ["landing", "Landing", "Same structure with arch.network's details: paper and ink, PP Neue Montreal figures, the pill CTA with the arrow disc, a navy night sky in dark, an orange pixel on the active tab."],
-  ];
-  const SP = [["home", "Home"], ["products", "Prime Yield"], ["prime-btc", "primeBTC"], ["lend", "Lend"], ["trade", "Trade"], ["points", "Points"], ["deposit", "Deposit"]];
-  const host = document.getElementById("polish");
-  for (const [d, name, idea] of POL) {
-    const links = (t) => SP.map(([p, l]) => `<a href="polish-shots/${d}/${p}-${t}-full.png">${l}</a>`).join("");
-    host.insertAdjacentHTML("beforeend", `<h2 style="margin-top:28px">${name}</h2><p>${idea}</p>
-      <h3>Light — ${links("light")}</h3><img src="polish-shots/${d}-light-overview.webp" alt="${name} light">
-      <h3>Dark — ${links("dark")}</h3><img src="polish-shots/${d}-dark-overview.webp" alt="${name} dark">`);
+      <h3>Light — ${links("light")}</h3><img src="shots/${d}-light-overview.png" alt="${name} light">
+      <h3>Dark — ${links("dark")}</h3><img src="shots/${d}-dark-overview.png" alt="${name} dark"></div></section>`);
   }
 </script>
 </body></html>
