@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kit · Arch Prime</title>
+<link rel="stylesheet" href="night.css">
+</head>
+<body>
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+<script>
+(() => {
+  const { AP, px, mark, btn, ibtn, seg, tabs, badge, dir, chev, gauge, chart, spark, esc } = NB;
+  const h = AP.home, a = h.assets[0];
+
+  // Both palettes, each swatch painted over its own theme's ground so alpha colours read true.
+  const palettes = [
+    { name: "Night", note: "Dark · default", ground: "#070b12", swatches: [
+      ["Ground", "#070b12", "#070b12"],
+      ["Dusk glow", "rgba(29,49,80,.55)", "#1d3150 at 55%"],
+      ["Panel", "rgba(255,255,255,.04)", "White 4%"],
+      ["Hairline", "rgba(255,255,255,.08)", "White 8%"],
+      ["Figures", "#f2f4f7", "#f2f4f7"],
+      ["Labels", "#8b95a5", "#8b95a5"],
+      ["Accent pixel", "#ff5e00", "#ff5e00"],
+      ["Gain · Loss", "linear-gradient(90deg,#7fcaa0 50%,#e8907f 50%)", "#7fcaa0 · #e8907f"],
+    ] },
+    { name: "Paper", note: "Light", ground: "#f7f7f7", swatches: [
+      ["Ground", "#f7f7f7", "#f7f7f7"],
+      ["Cool tint", "rgba(196,210,230,.32)", "Barely there"],
+      ["Panel", "#ffffff", "White, soft shadow"],
+      ["Hairline", "rgba(24,24,24,.08)", "Ink 8%"],
+      ["Figures", "#181818", "#181818"],
+      ["Labels", "#5e6570", "#5e6570"],
+      ["Accent pixel", "#ff5e00", "#ff5e00"],
+      ["Gain · Loss", "linear-gradient(90deg,#17845a 50%,#c4422b 50%)", "#17845a · #c4422b"],
+    ] },
+  ];
+  const colour = `<section class="card w12 rise">
+    <div class="card-h"><h2 class="card-t">Colour</h2><span class="sub">Two designed themes. Orange stays on a single lit pixel in both.</span></div>
+    ${palettes.map((p) => `<div class="kit-l">${p.name} · ${p.note}</div>
+    <div class="sw" style="grid-template-columns:repeat(8,1fr)">${p.swatches.map(([n, c, s]) => `<div><i style="background:linear-gradient(${c},${c}),${p.ground};${c.startsWith("linear") ? `background:${c};` : ""}box-shadow:inset 0 -1px 0 var(--line)"></i><p>${n}<span>${s}</span></p></div>`).join("")}</div>`).join("")}
+  </section>`;
+
+  const type = `<section class="card rise">
+    <div class="card-h"><h2 class="card-t">Type</h2><span class="sub">PP Neue Montreal</span></div>
+    <div class="ts">
+      <div><span class="k">Hero · 68 / 400</span><span class="hero">$21,902<span class="c">.10</span></span></div>
+      <div><span class="k">Figure · 44</span><span class="big">6.8%</span></div>
+      <div><span class="k">Figure · 30</span><span class="mid">$9,826.40</span></div>
+      <div><span class="k">Section · 24</span><span class="sec-t">All products</span></div>
+      <div><span class="k">Title · 16 / 500</span><span class="card-t">Your products</span></div>
+      <div><span class="k">Body · 15</span><span>About 14.9% a year at 3.0x.</span></div>
+      <div><span class="k">Label · 13</span><span class="label">Earning per year</span></div>
+    </div>
+  </section>`;
+
+  const buttons = `<section class="card rise">
+    <div class="card-h"><h2 class="card-t">Buttons</h2></div>
+    <div class="kit-l">Primary · solid pill, contrasting disc, arrow with one lit pixel (white pill on Night, ink pill on Paper)</div>
+    <div class="demo">${btn("Deposit", "p")}${btn("Boost", "p", { size: "sm" })}${btn("Buy 0.031754 BTC", "p", { size: "lg" })}</div>
+    <div class="demo" style="margin-top:12px">${btn("Connect wallet", "p", { size: "lg", cls: "btn-w" })}</div>
+    <div class="kit-l">Secondary · frosted</div>
+    <div class="demo">${btn("Transfer", "s", { icon: "transfer" })}${btn("Move funds", "s", { icon: "move" })}${btn("Withdraw", "s", { size: "sm" })}${btn("Pay back", "s", { size: "sm", disabled: true, title: "Nothing to pay back" })}</div>
+    <div class="kit-l">Ghost and icon</div>
+    <div class="demo">${btn("Share", "g", { icon: "share" })}${btn("Try again", "g")}
+      ${ibtn("columns", "Columns")}${ibtn("copy", "Copy")}${ibtn("external", "View on explorer")}${ibtn("close", "Close")}${ibtn("flip", "Switch what you pay and receive")}${ibtn("search", "Search", "sm")}</div>
+  </section>`;
+
+  const controls = `<section class="card rise">
+    <div class="card-h"><h2 class="card-t">Controls</h2></div>
+    <div class="kit-l">Segmented control</div>
+    <div class="demo">${seg(h.ranges, "1W", "", "Range")}${seg(AP.trade.modes, "Spot", "lg", "Market")}</div>
+    <div class="kit-l">Tabs</div>
+    ${tabs(h.tabs, "All assets")}
+    <div class="kit-l">Chips and switch</div>
+    <div class="demo"><span class="chips"><button class="chip">25%</button><button class="chip">50%</button><button class="chip">Max</button></span><span class="switch"><i></i>Pro</span><span class="switch on"><i></i>Hide balances</span></div>
+  </section>`;
+
+  const inputs = `<section class="card rise">
+    <div class="card-h"><h2 class="card-t">Inputs</h2></div>
+    <div class="field focus">
+      <div class="field-h"><span class="label">Lend to earn</span><span class="chips"><button class="chip">25%</button><button class="chip">50%</button><button class="chip">Max</button></span></div>
+      <div class="field-b"><span class="field-amt">2,500.00</span><button class="token" aria-label="Choose the asset to pay with">${mark("USD")}<span>USD</span><span class="caret">${px("caret")}</span></button></div>
+      <div class="field-f"><span>$2,500.00</span><span>Available 2,500.37</span></div>
+    </div>
+    <div class="kit-l">Text field</div>
+    <div class="input">Their Arch wallet address</div>
+    <div class="input focus" style="margin-top:10px"><span>bc1q</span><span class="cursor"></span></div>
+  </section>`;
+
+  const row = `<section class="card w8 rise">
+    <div class="card-h"><h2 class="card-t">Table row</h2></div>
+    <table class="tbl">
+      <thead><tr><th class="sort">Asset</th><th>7 days</th><th class="r">24h</th><th class="r">Earning</th><th class="r sort">Value</th><th style="width:28px"></th></tr></thead>
+      <tbody><tr>
+        <td><div class="asset">${mark(a.sym)}<div><b>${esc(a.name)}</b><span>${esc(a.amount)}</span></div></div></td>
+        <td>${spark(a.spark, 96, 28)}</td>
+        <td class="r d24 ${dir(a.dir)}">${esc(a.d24)}</td><td class="r up">${esc(a.earning)}</td><td class="r">${esc(a.value)}</td><td class="r">${chev()}</td>
+      </tr></tbody>
+    </table>
+  </section>`;
+
+  const badges = `<section class="card w4 rise">
+    <div class="card-h"><h2 class="card-t">Badges</h2></div>
+    <div class="demo">${badge("Healthy")}${badge("Watch")}${badge("At risk")}</div>
+    <div class="demo" style="margin-top:14px"><span class="badge soon">soon</span><span class="badge test">test</span><span class="badge">Up to 3.3x</span><span class="pill">+1.92%</span></div>
+  </section>`;
+
+  const g = `<section class="card w4 rise">
+    <div class="card-h"><h2 class="card-t">Health gauge</h2></div>
+    <div style="padding:6px 0 4px">${gauge(h.risk.score, h.risk.word, 236)}</div>
+  </section>`;
+
+  const sp = `<section class="card w4 rise">
+    <div class="card-h"><h2 class="card-t">Sparkline</h2><span class="sub">Last 30 days</span></div>
+    <div style="margin:0 -28px">${chart({ series: AP.products.all[0].nav, h: 120, padL: 28, padR: 28, padT: 16, padB: 12, dot: 9, fill: 0.14, label: "Last 30 days" })}</div>
+    <div class="demo" style="margin-top:18px;justify-content:space-between;flex-wrap:nowrap">${h.assets.map((x) => spark(x.spark, 62, 24)).join("")}</div>
+  </section>`;
+
+  const signed = `<section class="card w4 signed rise">
+    <span class="glow">${px("logo")}</span>
+    <h3>See your portfolio</h3>
+    ${btn("Connect wallet", "p")}
+  </section>`;
+
+  const navIcons = AP.nav.map((n) => [{ home: "home", yield: "yield", lend: "lend", trade: "trade", points: "points", docs: "docs" }[n.id], n.label]);
+  const actIcons = [["deposit", "Deposit"], ["withdraw", "Withdraw"], ["transfer", "Transfer"], ["move", "Move funds"], ["share", "Share"], ["copy", "Copy"], ["external", "External"], ["search", "Search"], ["chevron", "Chevron"], ["theme", "Theme"], ["collapse", "Collapse"], ["close", "Close"], ["flip", "Swap flip"], ["columns", "Settings / Columns"]];
+  const icons = `<section class="card w12 rise">
+    <div class="card-h"><h2 class="card-t">Icons</h2><span class="sub">7 × 7 LED grid, unlit cells at 9%, one orange accent. Lit cells bloom on Night and sit flat in ink on Paper. Nav icons rest dim and light up when active or hovered.</span></div>
+    <div class="kit-l">Navigation · active, rest, disabled</div>
+    <div class="icons">${navIcons.map(([k, l], i) => `<div class="ic ${i === 0 ? "lit glow" : "dim"}" style="${i === 5 ? "opacity:.5" : ""}">${px(k)}<span>${esc(l)}</span></div>`).join("")}
+      ${[["btc", "BTC"], ["primeBTC", "primeBTC"], ["usd", "Dollars"], ["primeUSD", "primeUSD"]].map(([k, l]) => `<div class="ic">${mark(k === "btc" ? "BTC" : k === "usd" ? "USD" : k)}<span>${l}</span></div>`).join("")}</div>
+    <div class="kit-l">Actions</div>
+    <div class="icons c7">${actIcons.map(([k, l]) => `<div class="ic">${px(k)}<span>${esc(l)}</span></div>`).join("")}</div>
+  </section>`;
+
+  NB.page("", `<div class="kit-h"><h1>Night <em>kit.</em></h1><p>Night is the app after dark: a navy ground, lifted panels on white hairlines and LED icons that glow when lit. Paper is its daylight twin: white panels on paper, ink figures and flat LED cells.</p></div>
+    <div class="kit">${colour}${type}${buttons}${controls}${inputs}${row}${badges}${icons}${g}${sp}${signed}</div>`, { title: "Kit" });
+})();
+</script>
+</body>
+</html>

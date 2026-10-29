@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prime Yield · Arch Prime</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+<script>
+const { AP, icon, mark, btn, seg, badge, tip, spark } = UI;
+const P = AP.products;
+const Y = P.yours;
+const TIP_YEAR = "The product's APY on its balance, in dollars, as the balance sheet states it.";
+
+const yCols = "minmax(0,1.3fr) 64px 60px 104px 150px 84px 104px";
+const yRows = Y.rows.map((r) => `
+  <a class="tr" href="${r.sym === "primeBTC" ? "prime-btc.html" : "#"}" style="grid-template-columns:${yCols}">
+    <span class="asset">${mark(r.sym, 34)}<span><div class="nm">${r.sym}</div><div class="sb">${r.asset}</div></span></span>
+    <span class="r up">${r.apy}</span>
+    <span class="r muted">${r.boost}</span>
+    <span class="r">${r.balance}</span>
+    <span class="r ${r.dir}">${r.d24}</span>
+    <span class="r">${r.earned}</span>
+    <span class="r">${btn(r.action, { sm: true, icon: r.action === "Withdraw" ? "withdraw" : "deposit" })}</span>
+  </a>`).join("");
+
+const cards = P.all.map((p) => `
+  <article class="card rise prod">
+    <a class="row" href="${p.sym === "primeBTC" ? "prime-btc.html" : "#"}" style="gap:12px">
+      ${mark(p.sym, 40)}
+      <span class="grow"><div style="font-size:18px;letter-spacing:-.015em">${p.sym}</div><div class="sub-line">${p.asset}</div></span>
+      <span class="btn btn-sec sm btn-icon" aria-hidden="true">${icon("chevron")}</span>
+    </a>
+    <div class="prod-mid">
+      <div>
+        <div class="cap">APY</div>
+        <div class="num-l" style="margin-top:10px;font-size:52px" data-roll>${p.apy}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="cap">Last 30 days</div>
+        <div style="margin-top:10px">${spark(p.nav, { w: 230, h: 56, lit: true, marker: 6 })}</div>
+      </div>
+    </div>
+    <div>
+      <div class="kv"><span class="k">Total deposited</span><span class="v">${p.tvl}</span></div>
+      <div class="kv"><span class="k">Boost up to</span><span class="v">${p.boostUpTo}</span></div>
+      <div class="kv"><span class="k">${p.apyAt[0]}</span><span class="v">${p.apyAt[1]}</span></div>
+    </div>
+    <div class="row" style="margin-top:18px;gap:8px">
+      ${btn("Deposit", { kind: "pri", arrow: true, cls: "grow" })}
+      ${btn("Boost", { kind: "sec", cls: "grow" })}
+    </div>
+  </article>`).join("");
+
+const lCols = "minmax(0,1.2fr) 70px 104px 104px 120px 120px 104px";
+const list = `
+  <section class="card rise">
+    <div class="tr th" style="grid-template-columns:${lCols}"><span>Product</span><span class="r">APY</span><span class="r">Boost up to</span><span class="r">${P.all[0].apyAt[0]}</span><span class="r">Total deposited</span><span class="r">Last 30 days</span><span></span></div>
+    ${P.all.map((p) => `
+    <a class="tr" href="${p.sym === "primeBTC" ? "prime-btc.html" : "#"}" style="grid-template-columns:${lCols}">
+      <span class="asset">${mark(p.sym, 34)}<span><div class="nm">${p.sym}</div><div class="sb">${p.asset}</div></span></span>
+      <span class="r up">${p.apy}</span><span class="r">${p.boostUpTo}</span><span class="r">${p.apyAt[1]}</span><span class="r">${p.tvl}</span>
+      <span class="r">${spark(p.nav, { w: 96, h: 26 })}</span>
+      <span class="r">${btn("Deposit", { sm: true, icon: "deposit" })}</span>
+    </a>`).join("")}
+  </section>`;
+
+UI.mount("yield", `
+<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Prime Yield</h1>
+<div class="rail-grid stretch">
+  <section class="card rise">
+    <div class="card-head"><span class="cap">Your products</span></div>
+    <div class="summary">
+      <div><div class="sub-line">${Y.summary[0][0]}</div><div class="num-l" style="margin-top:10px" data-roll>${Y.summary[0][1]}</div></div>
+      <div><div class="sub-line">${Y.summary[1][0]}</div><div class="num-s" style="margin-top:10px">${Y.summary[1][1]}</div></div>
+      <div><div class="sub-line" style="display:flex;gap:5px;align-items:center">${Y.summary[2][0]} ${tip(TIP_YEAR)}</div><div class="num-s up" style="margin-top:10px">${Y.summary[2][1]}</div></div>
+    </div>
+    <div class="tbl" style="margin-top:14px">
+      <div class="tr th" style="grid-template-columns:${yCols}">${Y.columns.map((c, i) => `<span class="${i ? "r" : ""}">${c}</span>`).join("")}</div>
+      ${yRows}
+    </div>
+  </section>
+  <div class="stack">
+    ${P.range.map(([k, v]) => `
+    <section class="card rise range-tile">
+      <div class="card-head"><span class="cap">${k}</span></div>
+      <div class="num-l" style="margin-top:28px;font-size:52px" data-roll>${v}</div>
+    </section>`).join("")}
+  </div>
+</div>
+
+<div class="section-head rise">
+  <span class="cap">All products</span>
+  <span class="row" style="gap:12px"><span class="sub-line">Show products as</span><span id="view">${seg(["Cards", "List"], "Cards", { label: "Show products as" })}</span></span>
+</div>
+<div id="asCards" class="grid2">${cards}</div>
+<div id="asList" hidden>${list}</div>
+`, () => {
+  document.querySelector("#view .seg").addEventListener("pick", (e) => {
+    document.getElementById("asCards").hidden = e.detail !== "Cards";
+    document.getElementById("asList").hidden = e.detail !== "List";
+  });
+});
+</script>
+</body>
+</html>

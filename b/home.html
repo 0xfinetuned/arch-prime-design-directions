@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home · Arch Prime</title>
+<link rel="stylesheet" href="night.css">
+</head>
+<body>
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+<script>
+(() => {
+  const { AP, px, mark, btn, ibtn, seg, tabs, badge, dir, chev, roll, money, gauge, chart, spark, tile, esc } = NB;
+  const h = AP.home;
+  const usdK = (v) => "$" + (v / 1000).toFixed(1) + "K";
+  const actIcon = { Transfer: "transfer", "Move funds": "move", Withdraw: "withdraw" };
+
+  const value = `<section class="card rise" aria-label="Account value">
+    <div class="vc-h">
+      <span class="label">${esc(h.label)}</span>
+      <div class="btns">
+        ${h.actions.map((a) => a === "Deposit" ? btn(a, "p") : btn(a, "s", { icon: actIcon[a] })).join("")}
+      </div>
+    </div>
+    <div class="vc-hero hero num">${money(h.value)}</div>
+    <div class="vc-l2">
+      <span class="pill">${esc(h.change.usd)}</span><span class="pill">${esc(h.change.pct)}</span>
+      ${btn("Share", "g", { icon: "share", size: "sm" })}
+      ${seg(h.ranges, h.range, "", "Range")}
+    </div>
+    <div class="vc-chart">${chart({ series: h.series, h: 268, axis: usdK, label: "Account value", padT: 26, padB: 24, padL: 28 })}</div>
+    <div class="cols3">
+      ${h.columns.map((c, i) => `<button class="c3 ${i === 0 ? "on" : ""} ${c.disabled ? "off" : ""}"${c.disabled ? ` title="${esc(c.disabled)}" aria-disabled="true"` : ""}>
+        <h4><i></i>${esc(c.title)}</h4>
+        <dl>${c.rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd><span data-roll>${esc(v)}</span></dd></div>`).join("")}</dl>
+      </button>`).join("")}
+    </div>
+  </section>`;
+
+  const lists = `<section class="card rise">
+    <div class="lists-h">${tabs(h.tabs, "All assets")}${ibtn("columns", "Columns")}</div>
+    <table class="tbl">
+      <thead><tr>
+        <th class="sort" style="color:var(--faint)">${h.assetColumns[0]}</th><th>${h.assetColumns[1]}</th><th class="r">${h.assetColumns[2]}</th>
+        <th class="r">${h.assetColumns[3]}</th><th class="r sort">${h.assetColumns[4]}</th><th style="width:28px"></th>
+      </tr></thead>
+      <tbody>${h.assets.map((a) => `<tr>
+        <td><div class="asset">${mark(a.sym)}<div><b>${esc(a.name)}</b><span>${esc(a.amount)}</span></div></div></td>
+        <td>${spark(a.spark, 96, 28)}</td>
+        <td class="r d24 ${dir(a.dir)}">${esc(a.d24)}</td>
+        <td class="r up">${esc(a.earning)}</td>
+        <td class="r">${esc(a.value)}</td>
+        <td class="r">${chev()}</td>
+      </tr>`).join("")}</tbody>
+    </table>
+  </section>`;
+
+  const risk = `<section class="card rise" id="risk">
+    <div class="card-h"><h2 class="card-t"><a href="#risk">Risk ${px("chevron")}</a></h2></div>
+    ${gauge(h.risk.score, h.risk.word, 232)}
+    <div class="rows" style="margin-top:22px">${h.risk.rows.map(([k, v]) => `<div class="row"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>
+  </section>`;
+
+  const accounts = `<section class="card rise">
+    <div class="card-h" style="margin-bottom:12px"><h2 class="card-t">Accounts</h2></div>
+    ${AP.account.accounts.map((a) => `<div class="acc-row ${a.name === AP.account.name ? "on" : ""}" role="radio" aria-checked="${a.name === AP.account.name}">
+      ${tile(a.name)}
+      <div class="n"><b>${esc(a.name)}</b><span>${esc(a.line)}</span></div><span class="v">${esc(a.net)}</span>
+    </div>`).join("")}
+    <a class="add" href="#"><span class="p">+</span>Add sub-account</a>
+  </section>`;
+
+  const boost = `<section class="card rise boost-c">
+    <span class="glow">${px("yield", "hero-ic")}</span>
+    <h3>${esc(h.boost.title)}</h3>
+    <p>${esc(h.boost.body)}</p>
+    ${btn(h.boost.cta, "s")}
+  </section>`;
+
+  NB.page("home", `<h1 class="sr">Home</h1><div class="home"><div class="col">${value}${lists}</div><aside class="col" aria-label="Risk and accounts">${risk}${accounts}${boost}</aside></div>`, { title: "Home" });
+})();
+</script>
+</body>
+</html>

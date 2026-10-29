@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kit · Arch Prime</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+<script>
+const { AP, icon, mark, btn, seg, tabs, badge, spark, gauge, chart } = UI;
+const H = AP.home, T = AP.trade;
+
+const PAL = {
+  light: { name: "Light", card: "#ffffff", ink: "#181818", cap: "rgba(24,24,24,.45)", hair: "rgba(24,24,24,.085)", up: "#1c8452", down: "#c2452a",
+    list: [["Ground", "#f2f2f0"], ["Card", "#ffffff"], ["Wash", "#f7f7f5"], ["Track", "#ececea"], ["Hairline", "rgba(24,24,24,.085)"], ["Ink", "#181818"], ["Ink 2", "#5e6570"], ["Caption", "rgba(24,24,24,.45)"], ["Orange", "#ff5e00"]] },
+  dark: { name: "Dark", card: "#15171a", ink: "#f2f2f0", cap: "rgba(255,255,255,.40)", hair: "rgba(255,255,255,.07)", up: "#46c088", down: "#f0775a",
+    list: [["Ground", "#0d0e10"], ["Card", "#15171a"], ["Wash", "#1a1c20"], ["Track", "#0f1012"], ["Hairline", "rgba(255,255,255,.07)"], ["Ink", "#f2f2f0"], ["Ink 2", "#959ca6"], ["Caption", "rgba(255,255,255,.40)"], ["Orange", "#ff5e00"]] },
+};
+const palette = (key) => {
+  const p = PAL[key];
+  const sw = (n, bg, hex) => `<div class="sw"><i style="background:${bg};box-shadow:inset 0 0 0 1px ${p.hair}"></i><span>${n}</span><span class="cap" style="color:${p.cap}">${hex}</span></div>`;
+  return `<div class="pal pal-${key}" style="background:${p.card};color:${p.ink};box-shadow:inset 0 0 0 1px ${p.hair}">
+    <div class="row" style="justify-content:space-between"><span class="cap" style="color:${p.cap}">${p.name}</span><span class="cap act" style="color:${p.cap}">● Active</span></div>
+    <div class="swatches">${p.list.map(([n, c]) => sw(n, c, c.replace(/\s/g, ""))).join("")}${sw("Up / Down", `linear-gradient(90deg,${p.up} 50%,${p.down} 50%)`, `${p.up} ${p.down}`)}</div>
+  </div>`;
+};
+
+const types = [
+  ["Display 68", `<span class="num-xl">${H.value}</span>`],
+  ["Figure 44", `<span class="num-l">${AP.primeBtc.boost.hero}</span>`],
+  ["Title 20", `<span class="h-title">${H.boost.title}</span>`],
+  ["Body 14.5", `<span style="font-size:14.5px">${H.boost.body}</span>`],
+  ["Label 13", `<span class="sub-line" style="font-size:13px">${AP.trade.receive.foot}</span>`],
+  ["Caption mono", `<span class="cap">${H.label} · ${AP.network}</span>`],
+].map(([k, v]) => `<div class="type-row"><span class="cap">${k}</span><span>${v}</span></div>`).join("");
+
+const navIcons = [["home", "Home"], ["yield", "Prime Yield"], ["lend", "Lend"], ["trade", "Trade"], ["points", "Points"], ["docs", "Documentation"]];
+const actIcons = [["deposit", "Deposit"], ["withdraw", "Withdraw"], ["transfer", "Transfer"], ["move", "Move funds"], ["share", "Share"], ["copy", "Copy"], ["external", "External"], ["search", "Search"], ["chevron", "Chevron"], ["theme", "Theme"], ["collapse", "Collapse"], ["close", "Close"], ["swap", "Swap flip"], ["columns", "Settings / Columns"]];
+const cell = ([n, l]) => `<div class="icon-cell"><span class="pair">${icon(n)}${icon(n, "lit")}</span><span>${l}</span></div>`;
+
+const assetCols = "minmax(0,1.4fr) 84px 150px 56px 92px 16px";
+const a = H.assets[0];
+
+UI.mount("", `
+<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Kit</h1>
+<div class="kit">
+  <section class="card rise span12">
+    <div class="card-head"><span class="cap">Colour · both themes</span><span class="sub-line">Paper and ink by day, night instruments by dark; orange only as a lit pixel</span></div>
+    <div class="pals">${palette("light")}${palette("dark")}</div>
+  </section>
+
+  <section class="card rise span5">
+    <div class="card-head"><span class="cap">Type · PP Neue Montreal</span></div>
+    <div>${types}</div>
+  </section>
+
+  <section class="card rise span7">
+    <div class="card-head"><span class="cap">Buttons</span></div>
+    <div class="kit-row"><span class="kit-label">Primary</span>${btn("Deposit", { kind: "pri", arrow: true })}${btn("Deposit", { kind: "pri", arrow: true, sm: true })}${btn(T.cta, { kind: "pri", arrow: true, lg: true })}</div>
+    <div class="kit-row"><span class="kit-label">Secondary</span>${btn("Withdraw", { icon: "withdraw" })}${btn("Move funds", { icon: "move" })}${btn("Boost", { sm: true })}</div>
+    <div class="kit-row"><span class="kit-label">Ghost</span>${btn("Share", { kind: "ghost", icon: "share" })}${btn("Add sub-account", { kind: "ghost", icon: "plus", sm: true })}</div>
+    <div class="kit-row"><span class="kit-label">Icon</span>${btn("Copy", { iconOnly: true, icon: "copy" })}${btn("External", { iconOnly: true, icon: "external" })}${btn("Columns", { iconOnly: true, icon: "columns", sm: true })}${btn("Close", { iconOnly: true, icon: "close", kind: "ghost", sm: true })}</div>
+    <div class="kit-row"><span class="kit-label">Disabled</span>${btn("Deposit", { kind: "pri", arrow: true, disabled: true })}${btn("Pay back", { disabled: true })}</div>
+  </section>
+  <section class="card rise span5" style="justify-content:space-between">
+    <div class="card-head"><span class="cap">Segmented · Tabs · Switch · Chips</span></div>
+    <div class="kit-row">${seg(H.ranges, H.range)}</div>
+    <div class="kit-row">${seg(T.modes, T.modes[0], { lg: true })}<span class="grow"></span><span class="row" style="gap:10px">Pro <i class="switch"></i></span><i class="switch on"></i></div>
+    <div>${tabs(H.tabs, H.tabs[0])}</div>
+    <div class="kit-row"><button class="chip">25%</button><button class="chip on">50%</button><button class="chip">Max</button></div>
+  </section>
+
+  <section class="card rise span7" style="justify-content:space-between">
+    <div class="card-head"><span class="cap">Table row · Badges</span></div>
+    <div class="tbl">
+      <div class="tr th" style="grid-template-columns:${assetCols}">${H.assetColumns.map((c, i) => `<span class="${i > 1 ? "r" : ""}">${c}</span>`).join("")}<span></span></div>
+      <a class="tr" href="#" style="grid-template-columns:${assetCols}">
+        <span class="asset">${mark(a.sym, 34)}<span><div class="nm">${a.name}</div><div class="sb">${a.amount}</div></span></span>
+        <span>${spark(a.spark, { w: 84, h: 26 })}</span><span class="r down">${a.d24}</span><span class="r up">${a.earning}</span><span class="r">${a.value}</span>${icon("chevron", "chev s16")}
+      </a>
+    </div>
+    <div class="kit-row" style="margin-top:6px">${badge("Healthy")}${badge("Watch")}${badge("At risk")}${badge("soon", "soon")}${badge("test", "test")}<span class="delta up">${H.change.pct}</span><span class="delta down">${AP.ticker[0].move}</span></div>
+    <div class="kit-row">${["BTC", "primeBTC", "USD", "primeUSD"].map((s) => mark(s, 32)).join("")}<span class="sub-line" style="margin-left:6px">Asset marks · prime marks carry the lit pixel</span></div>
+  </section>
+  <section class="card rise span5">
+    <div class="card-head"><span class="cap">Inputs</span></div>
+    <div class="amount">
+      <div class="amount-top"><span>${T.pay.label}</span><span class="row" style="gap:6px"><button class="chip">25%</button><button class="chip">50%</button><button class="chip">Max</button></span></div>
+      <div class="amount-mid"><span class="val">${T.pay.amount}</span><button class="token">${mark(T.pay.sym, 26)}<span>${T.pay.sym}</span>${icon("caret")}</button></div>
+      <div class="amount-foot"><span>${T.pay.foot}</span><span>${T.pay.balance}</span></div>
+    </div>
+    <div><label class="field-label">Recipient's Arch address</label><div class="text-field"><span class="grow">Their Arch wallet address</span>${btn("Paste", { kind: "ghost", sm: true })}</div></div>
+    <div><div class="text-field focus">${icon("search")}<span class="grow">BTC</span><span class="kbd">esc</span></div></div>
+  </section>
+  <section class="card rise span7">
+    <div class="card-head"><span class="cap">Sparkline · Chart</span><span class="sub-line">Ink line, orange end, crosshair readout</span></div>
+    <div class="row" style="gap:20px">${H.assets.slice(0, 3).map((x) => spark(x.spark, { w: 96, h: 30 })).join("")}${spark(AP.products.all[0].nav, { w: 96, h: 30, lit: true })}</div>
+    <div class="chart" id="kitChart"></div>
+  </section>
+
+  <section class="card rise span8">
+    <div class="card-head"><span class="cap">Health gauge · Healthy / Watch / At risk</span></div>
+    <div class="row" style="justify-content:space-around;align-items:flex-end;margin-top:6px">
+      <div style="display:grid;justify-items:center;gap:12px">${gauge(82, "Healthy")}${badge("Healthy")}</div>
+      <div style="display:grid;justify-items:center;gap:12px">${gauge(46, "Watch", { r: 60, len: 8, sm: true })}${badge("Watch")}</div>
+      <div style="display:grid;justify-items:center;gap:12px">${gauge(14, "At risk", { r: 60, len: 8, sm: true })}${badge("At risk")}</div>
+    </div>
+  </section>
+  <section class="card rise span4">
+    <div class="card-head"><span class="cap">Signed out</span></div>
+    <div class="signed-out grow">
+      ${UI.logo()}
+      <div class="h-title">See your portfolio</div>
+      ${btn("Connect wallet", { kind: "pri", arrow: true })}
+    </div>
+  </section>
+
+  <section class="card rise span12">
+    <div class="card-head"><span class="cap">Icons · 20px grid · 1.5px line · one pixel each — at rest and lit</span></div>
+    <div class="cap" style="margin-top:-4px">Navigation</div>
+    <div class="icons">${navIcons.map(cell).join("")}</div>
+    <div class="cap" style="margin-top:4px">Actions</div>
+    <div class="icons">${actIcons.map(cell).join("")}</div>
+  </section>
+</div>
+`, () => {
+  chart(document.getElementById("kitChart"), {
+    series: H.series, height: 168, tickCount: 2, padR: 48,
+    fmtY: (v) => "$" + (v / 1000).toFixed(1) + "K",
+    readCap: () => "Account value", readVal: (v) => "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2 }),
+    park: 17,
+  });
+});
+</script>
+</body>
+</html>

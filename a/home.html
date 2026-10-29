@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home · Arch Prime</title>
+<link rel="stylesheet" href="style.css">
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+</head>
+<body>
+<script>
+const { AP, px, mark, btn, seg, tabs, badge, rows, dir, move, gauge, chart, spark, esc } = P;
+const H = AP.home;
+const [whole, cents] = H.value.split(".");
+const ICON = { Transfer: "transfer", "Move funds": "move", Withdraw: "withdraw" };
+
+const assetRows = H.assets.map((a) => `
+  <tr>
+    <td><div class="asset">${mark(a.sym)}<div class="asset-t"><span>${esc(a.name)}</span><small>${esc(a.amount)}</small></div></div></td>
+    <td class="pl">${spark(a.spark, { w: 88, h: 26 })}</td>
+    <td class="r ${dir(a.dir)}">${move(a.d24)}</td>
+    <td class="r up">${esc(a.earning)}</td>
+    <td class="r">${esc(a.value)}</td>
+    <td class="w-ch"><span class="ch">${px("chevron", { size: 12 })}</span></td>
+  </tr>`).join("");
+
+const cols = H.columns.map((c, i) => `
+  <button class="col${i === 0 ? " is-on" : ""}${c.disabled ? " is-off" : ""}"${c.disabled ? ` title="${esc(c.disabled)}" aria-disabled="true"` : ""}>
+    <span class="col-h"><span>${esc(c.title)}</span></span>
+    ${c.rows.map(([k, v]) => `<span class="kv"><span>${esc(k)}</span><b>${esc(v)}</b></span>`).join("")}
+  </button>`).join("");
+
+const accts = AP.account.accounts.map((a) => `
+  <label class="acct"><span class="radio${a.name === AP.account.name ? " is-on" : ""}"></span>
+    <span class="acct-t"><span>${esc(a.name)}</span><small>${esc(a.line)}</small></span>
+    <span class="acct-v">${esc(a.net)}</span></label>`).join("");
+
+P.page({
+  active: "home", title: "Home",
+  html: `
+  <h1 class="sr">Home</h1>
+  <section class="hero rise" aria-label="Account value">
+    <div class="hero-l">
+      <span class="label">${esc(H.label)}</span>
+      <div class="fig-xl"><span data-roll="0">${esc(whole)}</span><span class="dim" data-roll="260">.${esc(cents)}</span></div>
+      <div class="hero-line">
+        <span class="chg ${dir(H.change.dir)}"><span>${esc(H.change.usd)}</span><span>${esc(H.change.pct)}</span></span>
+        <span class="sep"></span>
+        ${btn.ghost("Share", { icon: "share" })}
+      </div>
+    </div>
+    <div class="group">
+      ${H.actions.map((a) => a === "Deposit" ? btn.primary(a) : btn.secondary(a, { icon: ICON[a] })).join("")}
+    </div>
+  </section>
+
+  <div class="split">
+    <div class="maincol">
+      <div class="rise" style="--dl:120ms">
+        <div class="chart-bar"><span class="legend"><i></i>Account value</span>${seg(H.ranges, H.range)}</div>
+        <div class="chart" id="value-chart"></div>
+        <div class="cols">${cols}</div>
+      </div>
+
+      <section class="lists rise" style="--dl:220ms">
+        <div class="tabs-bar">${tabs(H.tabs, "All assets")}${btn.icon("columns", "Columns", { sm: false })}</div>
+        <table class="tbl">
+          <colgroup><col><col style="width:132px"><col style="width:180px"><col style="width:96px"><col style="width:124px"><col style="width:44px"></colgroup>
+          <thead><tr>
+            <th><span class="sort">${esc(H.assetColumns[0])}</span></th>
+            <th class="pl">${esc(H.assetColumns[1])}</th>
+            <th class="r">${esc(H.assetColumns[2])}</th>
+            <th class="r">${esc(H.assetColumns[3])}</th>
+            <th class="r"><span class="sort">${px("caret", { size: 8 })}${esc(H.assetColumns[4])}</span></th>
+            <th class="w-ch"></th>
+          </tr></thead>
+          <tbody>${assetRows}</tbody>
+        </table>
+      </section>
+    </div>
+
+    <aside class="rail" aria-label="Risk and accounts">
+      <section class="rail-sec rise" id="risk" style="--dl:160ms">
+        <div class="sec is-light"><a class="rail-h" href="#risk">Risk ${px("chevron", { size: 10 })}</a></div>
+        <div class="risk-g">${gauge(H.risk.score, H.risk.word)}</div>
+        ${rows([
+          [H.risk.rows[0][0], H.risk.rows[0][1], "What you owe as a share of what backs it."],
+          [H.risk.rows[1][0], H.risk.rows[1][1], "The loan-to-value at which the account can be liquidated."],
+          [H.risk.rows[2][0], H.risk.rows[2][1], "The BTC price at which the account can be liquidated."],
+        ], "is-closed")}
+      </section>
+      <section class="rail-sec rise" style="--dl:220ms">
+        <div class="sec is-light"><span class="rail-h">Accounts</span></div>
+        <div>${accts}</div>
+        <div style="padding-top:6px">${btn.ghost("Add sub-account", { icon: "plus" })}</div>
+      </section>
+      <section class="boost cascade rise" style="--dl:280ms">
+        ${px("yield", { size: 28, led: true })}
+        <h3 class="h3">${esc(H.boost.title)}</h3>
+        <p>${esc(H.boost.body)}</p>
+        <div>${btn.secondary(H.boost.cta)}</div>
+      </section>
+    </aside>
+  </div>`,
+  after() {
+    chart(document.getElementById("value-chart"), {
+      series: H.series, h: 260, axis: true, dot: true, label: "Account value",
+      fmt: (v) => "$" + (v / 1000).toFixed(1) + "K",
+      fmtTip: (v) => "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    });
+  },
+});
+</script>
+</body>
+</html>

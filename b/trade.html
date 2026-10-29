@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade · Arch Prime</title>
+<link rel="stylesheet" href="night.css">
+</head>
+<body>
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+<script>
+(() => {
+  const { AP, px, mark, btn, ibtn, seg, dir, chev, esc } = NB;
+  const T = AP.trade;
+
+  const token = (sym, aria) => `<button class="token" aria-label="${esc(aria)}">${mark(sym)}<span>${esc(sym)}</span><span class="caret">${px("caret")}</span></button>`;
+
+  const swap = `<section class="card swap rise" aria-label="Swap">
+    <div class="card-h"><h2 class="card-t">Swap</h2><div class="trade-top">${seg(T.modes, "Spot", "", "Market")}<span class="switch"><i></i>Pro</span></div></div>
+    <div class="field focus">
+      <div class="field-h"><span class="label">${esc(T.pay.label)}</span><span class="chips"><button class="chip">Max</button></span></div>
+      <div class="field-b"><span class="field-amt" data-roll>${esc(T.pay.amount)}</span>${token(T.pay.sym, "Choose the asset to pay with")}</div>
+      <div class="field-f"><span>${esc(T.pay.foot)}</span><span>${esc(T.pay.balance)}</span></div>
+    </div>
+    <div class="flip">${ibtn("flip", "Switch what you pay and receive")}</div>
+    <div class="field">
+      <div class="field-h"><span class="label">${esc(T.receive.label)}</span></div>
+      <div class="field-b"><span class="field-amt" data-roll>${esc(T.receive.amount)}</span>${token(T.receive.sym, "Choose the asset to receive")}</div>
+      <div class="field-f"><span>${esc(T.receive.foot)}</span></div>
+    </div>
+    <div class="route">
+      <button class="route-h" style="width:100%" aria-expanded="true"><span class="k">${esc(T.route[0])}</span><span style="display:flex;align-items:center;gap:10px;color:var(--mute)">${esc(T.route[1])}${chev()}</span></button>
+      <div class="rows ruled">${T.details.map(([k, v]) => `<div class="row"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>
+    </div>
+    ${btn(T.cta, "p", { size: "lg", cls: "btn-w" })}
+  </section>`;
+
+  const featured = `<section class="card rise">
+    <div class="card-h"><h2 class="card-t">Featured</h2></div>
+    ${T.featured.map((f) => `<div class="feat-r">${mark(f.sym)}<div class="n"><b>${esc(f.sym)}</b><span>${esc(f.name)}</span></div><div class="v">${esc(f.price)}<span class="${dir(f.dir)}">${esc(f.move)}</span></div></div>`).join("")}
+    <div style="margin-top:14px">${btn("Explore", "s", { cls: "btn-w", icon: "search" })}</div>
+  </section>`;
+
+  NB.page("trade", `<h1 class="sr">Trade</h1>
+    <div class="trade">${swap}<div class="col">${featured}</div></div>`, { title: "Trade", ticker: true });
+})();
+</script>
+</body>
+</html>

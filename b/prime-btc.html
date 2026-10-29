@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>primeBTC · Arch Prime</title>
+<link rel="stylesheet" href="night.css">
+</head>
+<body>
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+<script>
+(() => {
+  const { AP, px, mark, btn, seg, tabs, chev, chart, esc } = NB;
+  const B = AP.primeBtc;
+  const statTips = {
+    "7-day APY": "Annualised from the last 7 days of NAV per share, after fees.",
+    "30-day APY": "Annualised from the last 30 days of NAV per share, after fees.",
+    "Since start": "Annualised since the vault opened, after fees.",
+    "Sharpe ratio": "Return per unit of volatility, measured against lending the same asset.",
+    "Worst drop": "The largest fall in NAV per share from a peak, to date.",
+    "Room left": "What the vault can still take before it reaches its deposit cap.",
+  };
+  const fig = (label) => B.head.find((h) => h[0] === label);
+
+  const head = `<header class="phead">
+    <div class="ph-top">
+      ${mark("primeBTC", "lg")}
+      <h1>${esc(B.name)}</h1>
+      <div class="ph-kpi"><span class="badge"><b>${esc(fig("APY")[1])}</b> APY</span><span class="badge"><b>${esc(fig("Deposited")[1])}</b> Deposited</span></div>
+      <button class="btn btn-s btn-sm vault" aria-label="Vault"><span>Vault</span><span class="caret">${px("caret")}</span></button>
+    </div>
+  </header>
+  <div class="ph-figs">${B.head.map(([k, v, mv]) => `<div><div class="label">${esc(k)}</div><div><span class="big" data-roll>${esc(v)}</span><span class="mv up">${esc(mv)}</span></div></div>`).join("")}</div>
+  ${tabs(B.tabs, "Overview")}`;
+
+  const chartCard = `<section class="card rise">
+    <div class="ch-h">${tabs(B.chartTabs, "APY")}${seg(B.ranges, "1M", "", "Range")}</div>
+    ${chart({ series: B.apySeries, h: 268, step: true, avg: B.avg30, avgLabel: `30-day avg ${B.avg30}%`, axis: (v) => v.toFixed(1) + "%", label: "APY", padT: 20, padB: 20, padLo: 0.5, padHi: 0.35, ticks: 4 })}
+    <div class="legend" style="margin-top:16px"><span><i></i>APY</span><span><i class="dash"></i>30-day avg</span></div>
+    <div class="stats6">${B.stats.map(([k, v]) => `<div><div class="label">${esc(k)}<span class="tip" title="${esc(statTips[k] || "")}">i</span></div><div class="sm" data-roll>${esc(v)}</div></div>`).join("")}</div>
+  </section>`;
+
+  const maxGain = Math.max(...[B.hold, B.boost].map((o) => parseFloat(o.rowValue.replace(/[^\d.]/g, ""))));
+  const offer = (o, primary) => {
+    const gain = parseFloat(o.rowValue.replace(/[^\d.]/g, ""));
+    return `<section class="card offer rise">
+      <div class="label-row"><span class="t">${esc(o.title)}</span>${o.badge ? `<span class="badge">${esc(o.badge)}</span>` : ""}</div>
+      <div class="hero-line"><span class="big" data-roll>${esc(o.hero)}</span><span class="u">${esc(o.heroUnit)}</span></div>
+      <div class="yr">
+        <div class="yr-h"><span class="k">${esc(o.rowLabel)}</span><span class="up">${esc(o.rowValue)}</span></div>
+        <div class="meter"><b style="width:${((gain / maxGain) * 100).toFixed(1)}%"></b></div>
+      </div>
+      ${primary ? btn(o.cta, "p", { cls: "btn-w" }) : btn(o.cta, "s", { cls: "btn-w", icon: "transfer" })}
+    </section>`;
+  };
+
+  const navBody = `<div class="acc-b">
+    <div class="sub-t">Reported by the manager</div>
+    <div class="rows">
+      <div class="row"><span class="k">NAV per share</span><span class="v">${esc(fig("NAV per share")[1])}</span></div>
+      <div class="row"><span class="k">Status</span><span class="v fresh"><i></i>${esc(B.disclosure[0].head[1][1])}</span></div>
+      <div class="row"><span class="k">Last report</span><span class="v">${esc(B.disclosure[0].head[2][1])}</span></div>
+    </div><span></span>
+  </div>`;
+  const acc = `<section class="card acc rise" aria-label="Disclosure">${B.disclosure.map((d, i) => `<div class="acc-i ${i === 0 ? "open" : ""}">
+      <button class="acc-h" aria-expanded="${i === 0}"><h3>${esc(d.title)}</h3>${d.head.map(([k, v]) => `<div class="f"><div class="label">${esc(k)}</div><div>${k === "Status" ? `<span class="fresh"><i></i>${esc(v)}</span>` : esc(v)}</div></div>`).join("")}${chev()}</button>
+      ${i === 0 ? navBody : ""}
+    </div>`).join("")}</section>`;
+
+  NB.page("prime-btc", `${head}
+    <div class="prime"><div class="col">${chartCard}</div><aside class="col">${offer(B.hold, true)}${offer(B.boost, false)}</aside></div>
+    ${acc}`, { title: "primeBTC" });
+})();
+</script>
+</body>
+</html>

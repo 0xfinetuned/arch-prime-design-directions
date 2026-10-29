@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lend · Arch Prime</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+<script>
+const { AP, icon, mark, tile, btn, badge, tip, gauge } = UI;
+const L = AP.lend;
+const TIPS = {
+  "Borrowing power": "What your account can borrow now, at the market's rates. Spend it on a buy or a Boost; it shows up as a loan.",
+  "Health": "Everything in this account backs every loan and Boost. 100 means nothing owed; 0 means liquidation.",
+  "Lending": "Every deposit lends itself and earns the supply rate. Withdraw any time.",
+  "Used": "How much of your borrowing power your loans already use.",
+};
+const ctaKind = { Buy: "pri", Borrow: "pri", Withdraw: "sec", Boost: "sec", "Pay back": "sec" };
+const ctaIcon = { Buy: "trade", Boost: "yield", Borrow: "deposit", "Pay back": "withdraw", Withdraw: "withdraw" };
+
+const tiles = L.tiles.map((t) => {
+  const head = `<div class="card-head"><span class="cap" style="display:inline-flex;gap:5px;align-items:center">${t.title}${TIPS[t.title] ? " " + tip(TIPS[t.title]) : ""}</span></div>`;
+  if (t.gauge != null) {
+    return `<section class="card rise tile-card">${head}
+      <div style="display:grid;justify-items:center;margin:16px 0 6px">${gauge(t.gauge, t.word, { r: 66, len: 9, sm: true })}</div>
+      <div style="display:grid;justify-items:center;margin-bottom:8px">${badge(t.word)}</div>
+      <div style="margin-top:auto">${t.rows.map(([k, v]) => `<div class="kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("")}</div>
+    </section>`;
+  }
+  const rows = t.rows.map(([k, v]) => k === "Used"
+    ? `<div style="padding:12px 0 4px"><div class="row" style="justify-content:space-between;font-size:14px"><span class="muted" style="display:inline-flex;gap:5px;align-items:center">${k} ${tip(TIPS.Used)}</span><span>${v}</span></div><div class="bar tick" style="margin-top:10px"><i class="grow-x" style="width:${v}"></i></div></div>`
+    : `<div class="kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
+  return `<section class="card rise tile-card">${head}
+    <div class="num-m" style="margin-top:22px" data-roll>${t.hero}</div>
+    <div class="sub-line ${/^\+/.test(t.sub) ? "up" : ""}" style="margin-top:8px;font-size:13.5px">${t.sub}</div>
+    <div style="margin-top:18px;border-top:1px solid var(--hair)">${rows}</div>
+    <div class="acts">${t.ctas.map((c) => btn(c, { kind: ctaKind[c], sm: true, icon: ctaIcon[c] })).join("")}</div>
+  </section>`;
+}).join("");
+
+const cols = "minmax(0,1.2fr) 96px 96px 92px 92px 140px 128px 20px";
+const markets = L.markets.map((m) => `
+  <a class="tr" href="#" style="grid-template-columns:${cols};min-height:68px">
+    <span class="asset">${mark(m.sym, 36)}<span class="nm" style="font-size:15px">${m.name}</span></span>
+    <span class="r up">${m.supply}</span>
+    <span class="r">${m.borrow}</span>
+    <span class="r">${m.supplied}</span>
+    <span class="r">${m.borrowed}</span>
+    <span class="r util"><span class="bar"><i class="grow-x" style="width:${m.util}%"></i></span><span>${m.util}%</span></span>
+    <span class="r"><div class="cap" style="font-size:9.5px;text-align:right">${m.you[0]}</div><div style="margin-top:4px;text-align:right" class="${m.you[1] === "None" ? "faint" : ""}">${m.you[1]}</div></span>
+    ${icon("chevron", "chev s16")}
+  </a>`).join("");
+
+UI.mount("lend", `
+<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Lend</h1>
+<div class="quiet rise">${tile(AP.account.name, 22)}<span>${AP.account.name}</span></div>
+<div class="tiles4">${tiles}</div>
+<section class="card rise" style="margin-top:24px">
+  <div class="card-head"><span class="cap">Markets</span></div>
+  <div class="tbl" style="margin-top:12px">
+    <div class="tr th" style="grid-template-columns:${cols}">${L.columns.map((c, i) => `<span class="${i ? "r" : ""}">${c}</span>`).join("")}<span></span></div>
+    ${markets}
+  </div>
+</section>
+`);
+</script>
+</body>
+</html>

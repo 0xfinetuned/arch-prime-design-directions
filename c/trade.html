@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade · Arch Prime</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+<script>
+const { AP, icon, mark, btn, seg } = UI;
+const T = AP.trade;
+
+const tickItems = AP.ticker.map((t) => `<span class="ticker-item"><b>${t.sym}</b><span>${t.value}</span><span class="mv ${t.dir === "down" ? "down" : ""}">${t.move}</span></span>`).join("");
+
+const token = (sym, aria) => `<button class="token" aria-label="${aria}">${mark(sym, 26)}<span>${sym}</span>${icon("caret")}</button>`;
+
+const featured = T.featured.map((f) => `
+  <a class="tr" href="#" style="grid-template-columns:minmax(0,1fr) auto;min-height:62px">
+    <span class="asset">${mark(f.sym, 34)}<span><div class="nm">${f.sym}</div><div class="sb">${f.name}</div></span></span>
+    <span class="r"><div style="font-size:14.5px">${f.price}</div><div class="sub-line ${f.dir === "down" ? "down" : f.dir === "up" ? "up" : ""}" style="text-align:right">${f.move}</div></span>
+  </a>`).join("");
+
+UI.mount("trade", `
+<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Trade</h1>
+<div class="ticker rise" aria-label="Prices"><div class="ticker-track">${tickItems}${tickItems}</div></div>
+
+<div class="trade-wrap">
+  <div class="trade-bar rise">
+    ${seg(T.modes, T.modes[0], { label: "Market" })}
+    <span class="grow"></span>
+    <button class="row" style="gap:10px;font-size:14px" aria-label="Pro">Pro <i class="switch"></i></button>
+  </div>
+  <div>
+    <section class="card rise" aria-label="Swap">
+      <div class="card-head" style="margin-bottom:14px"><span class="cap">Swap</span></div>
+      <div class="amount">
+        <div class="amount-top"><span>${T.pay.label}</span><span class="row" style="gap:8px">${T.pay.balance} <button class="chip">Max</button></span></div>
+        <div class="amount-mid"><span class="val" data-roll>${T.pay.amount}</span>${token(T.pay.sym, "Choose the asset to pay with")}</div>
+        <div class="amount-foot"><span>${T.pay.foot}</span></div>
+      </div>
+      <div class="flip"><button aria-label="Switch what you pay and receive">${icon("swap")}</button></div>
+      <div class="amount">
+        <div class="amount-top"><span>${T.receive.label}</span></div>
+        <div class="amount-mid"><span class="val" data-roll>${T.receive.amount}</span>${token(T.receive.sym, "Choose the asset to receive")}</div>
+        <div class="amount-foot"><span>${T.receive.foot}</span></div>
+      </div>
+      <div class="route">
+        <div class="route-head"><span>${T.route[0]}</span><span class="row" style="gap:6px;color:var(--ink-2)">${T.route[1]} ${icon("chevron", "s16")}</span></div>
+        ${T.details.map(([k, v]) => `<div class="kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("")}
+      </div>
+      <div style="margin-top:16px">${btn(T.cta, { kind: "pri", arrow: true, block: true, lg: true })}</div>
+    </section>
+  </div>
+
+  <section class="card rise" aria-label="Featured">
+    <div class="card-head"><span class="cap">Featured</span></div>
+    <div class="tbl" style="margin-top:10px">${featured}</div>
+    <div style="margin-top:14px">${btn("Explore", { kind: "sec", icon: "search", block: true })}</div>
+  </section>
+</div>
+`, () => {
+  document.querySelector(".route-head").addEventListener("click", (e) => {
+    const r = e.currentTarget.parentElement;
+    r.querySelectorAll(".kv").forEach((k) => (k.hidden = !k.hidden));
+  });
+});
+</script>
+</body>
+</html>

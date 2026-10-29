@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>primeBTC · Arch Prime</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+<script>
+const { AP, icon, mark, btn, seg, tabs, badge, tip, spark, chart } = UI;
+const B = AP.primeBtc;
+const STAT_TIPS = {
+  "7-day APY": "Annualised from the last 7 days of NAV per share, after fees.",
+  "30-day APY": "Annualised from the last 30 days…",
+  "Since start": "Annualised since the vault opened, after fees.",
+  "Sharpe ratio": "Return per unit of volatility, measured against lending the same asset.",
+  "Worst drop": "The largest fall in NAV per share from a peak, to date.",
+  "Room left": "What the vault can still take before it reaches its deposit cap.",
+};
+const gain = (s) => parseFloat(s.replace(/[^\d.]/g, ""));
+const maxGain = Math.max(gain(B.hold.rowValue), gain(B.boost.rowValue));
+
+const offer = (o, primary, isBoost) => `
+  <section class="card rise offer">
+    <div class="card-head"><span class="cap">${o.title}</span>${o.badge ? badge(o.badge, "neutral") : ""}</div>
+    <div class="hero"><span class="num-l" data-roll>${o.hero}</span><span class="unit">${o.heroUnit}</span></div>
+    <div class="yr">
+      <div class="row"><span class="muted">${o.rowLabel}</span><span class="up">${o.rowValue}</span></div>
+      <div class="bar ${isBoost ? "tick" : ""}"><i class="grow-x" style="width:${(gain(o.rowValue) / maxGain * 100).toFixed(1)}%"></i></div>
+    </div>
+    ${btn(o.cta, { kind: primary ? "pri" : "sec", arrow: true, block: true })}
+  </section>`;
+
+const navSeries = AP.products.all.find((p) => p.sym === B.name).nav;
+const disc = B.disclosure.map((d, k) => `
+  <div class="disc ${k === 0 ? "open" : ""}">
+    <div class="disc-row" role="button" aria-expanded="${k === 0}">
+      <span class="t">${d.title}</span>
+      ${d.head.map(([lab, v]) => `<span class="f"><span class="cap">${lab}</span><span class="v">${v === "Fresh" ? badge("Fresh", "ok") : v}</span></span>`).join("")}
+      ${icon("chevron")}
+    </div>
+    ${k === 0 ? `<div class="disc-body">
+      <div>
+        <div class="cap">Reported by the manager</div>
+        <div class="sub-line" style="margin-top:18px;font-size:13.5px">NAV per share</div>
+        <div class="num-m" style="margin-top:8px">${B.head[1][1]}</div>
+      </div>
+      <div class="recent">
+        <span class="cap">Recent NAV</span>
+        <div class="chart" id="navChart"></div>
+      </div>
+    </div>` : ""}
+  </div>`).join("");
+
+UI.mount("prime-btc", `
+<header class="card phead rise">
+  <div class="phead-top">
+    <div class="row" style="gap:14px">${mark(B.name, 44)}<h1>${B.name}</h1></div>
+    ${B.head.map(([k, v, mv]) => `<div class="hfig"><div class="cap">${k}</div><div class="v"><span>${v}</span><span class="mv up">${mv}</span></div></div>`).join("")}
+    <span class="grow"></span>
+    <button class="btn btn-sec sm" aria-label="Vault">Vault ${icon("caret")}</button>
+  </div>
+  ${tabs(B.tabs, B.tabs[0])}
+</header>
+
+<div class="rail-grid" style="grid-template-columns:minmax(0,1fr) 332px">
+  <section class="card rise">
+    <div class="card-head">
+      <div id="metric">${seg(B.chartTabs, B.chartTabs[0], { label: "Metric" })}</div>
+      ${seg(B.ranges, "1M", { label: "Range" })}
+    </div>
+    <div class="chart" id="apyChart" style="margin-top:22px"></div>
+    <div class="stats6">${B.stats.map(([k, v]) => `<div><span class="k">${k} ${tip(STAT_TIPS[k])}</span><span class="v">${v}</span></div>`).join("")}</div>
+  </section>
+  <div class="stack">
+    ${offer(B.hold, true, false)}
+    ${offer(B.boost, false, true)}
+  </div>
+</div>
+
+<section class="card rise disc-card" style="margin-top:24px">${disc}</section>
+`, () => {
+  const day = (i) => { const d = new Date(Date.UTC(2026, 8, 30 + i)); return d.toLocaleString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }); };
+  chart(document.getElementById("apyChart"), {
+    series: B.apySeries, step: true, height: 300, tickCount: 3,
+    avg: B.avg30, avgLabel: `30-day avg · ${B.avg30}%`,
+    fmtY: (v) => v.toFixed(1) + "%",
+    xLabels: [1, 8, 15, 22, 29].map((i) => [i, day(i)]),
+    readCap: (i) => `${day(i)} · APY`,
+    readVal: (v) => v.toFixed(1) + "%",
+    park: 18,
+  });
+  chart(document.getElementById("navChart"), {
+    series: navSeries, height: 150, tickCount: 2, padB: 8, padR: 64,
+    fmtY: (v) => v.toFixed(3),
+    readCap: () => "NAV per share",
+    readVal: (v) => v.toFixed(4) + " BTC", park: 9,
+  });
+  document.querySelectorAll(".disc-row").forEach((r) => r.addEventListener("click", () => {
+    const d = r.parentElement, open = !d.classList.contains("open");
+    document.querySelectorAll(".disc").forEach((x) => x.classList.remove("open"));
+    if (open && d.querySelector(".disc-body")) d.classList.add("open");
+  }));
+});
+</script>
+</body>
+</html>

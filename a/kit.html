@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kit · Arch Prime</title>
+<link rel="stylesheet" href="style.css">
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+</head>
+<body>
+<script>
+const { AP, px, mark, btn, seg, tabs, badge, rows, dir, move, led, gauge, spark, esc } = P;
+const H = AP.home;
+const btcRow = H.assets[0];
+
+// [name, note, colour] per theme; each swatch is drawn on its own theme's ground
+const SW = {
+  light: { ground: "#f7f7f7", label: "Light · paper", set: [
+    ["Paper", "#f7f7f7", "#f7f7f7"], ["Card", "#ffffff", "#ffffff"], ["Ink", "#181818", "#181818"],
+    ["Ink 2", "#5e6570", "#5e6570"], ["Ink 3", "#9aa0a8", "#9aa0a8"], ["Rule", "ink 10%", "rgba(24,24,24,.1)"],
+    ["Orange", "#ff5e00 · once", "#ff5e00"], ["Up", "#23804c", "#23804c"], ["Down", "#b4462e", "#b4462e"],
+  ] },
+  dark: { ground: "#0d0d0d", label: "Dark · black", set: [
+    ["Ground", "#0d0d0d", "#0d0d0d"], ["Card", "#151515", "#151515"], ["White", "#f4f4f2", "#f4f4f2"],
+    ["Grey 2", "#8e959f", "#8e959f"], ["Grey 3", "#5b6169", "#5b6169"], ["Rule", "white 10%", "rgba(255,255,255,.1)"],
+    ["Orange", "#ff5e00 · once", "#ff5e00"], ["Up", "#5cbf86", "#5cbf86"], ["Down", "#e4775d", "#e4775d"],
+  ] },
+};
+const swRow = ({ ground, label, set }) => `<div class="sw-set"><span class="label-sm">${label}</span><div class="sw-row">${set.map(([n, v, c]) =>
+  `<div class="sw"><i style="background:linear-gradient(${c},${c}),${ground}"></i><span>${n}</span><small>${v}</small></div>`).join("")}</div></div>`;
+const NAV = [["home", "Home"], ["yield", "Prime Yield"], ["lend", "Lend"], ["trade", "Trade"], ["points", "Points"], ["docs", "Documentation"]];
+const ACT = [
+  ["deposit", "Deposit"], ["withdraw", "Withdraw"], ["transfer", "Transfer"], ["move", "Move funds"], ["share", "Share"], ["copy", "Copy"], ["external", "External"],
+  ["search", "Search"], ["chevron", "Chevron"], ["theme", "Theme"], ["collapse", "Collapse"], ["close", "Close"], ["flip", "Swap flip"], ["columns", "Settings / Columns"],
+];
+const ks = (title, sub, body) => `<section class="ks"><div class="ks-h"><h2 class="h3">${title}</h2>${sub ? `<small>${sub}</small>` : ""}</div><div class="ks-b">${body}</div></section>`;
+const line = (cap, body) => `<div class="kit-line"><span class="kit-cap">${cap}</span>${body}</div>`;
+
+P.page({
+  active: "", title: "Kit",
+  html: `
+  <div class="kit-intro rise">
+    <div style="display:flex;flex-direction:column;gap:16px"><span class="label">Arch Prime · Direction A</span><h1 class="fig-xl">Paper<span class="or">.</span></h1></div>
+    <p>Ink on paper, and white on black. Structure from hairlines, alignment and space; figures set like headlines; orange once per screen; LED pixels that light when touched.</p>
+  </div>
+
+  ${ks("Colour", "Two grounds, few colours, used for meaning", `${swRow(SW.light)}${swRow(SW.dark)}`)}
+
+  ${ks("Type", "PP Neue Montreal, 400 and 500", `<div>
+    <div class="type-row"><span class="label-sm">Display · 92 / 400<br>−0.045em</span><span class="fig-xl">${esc(H.value.split(".")[0])}<span class="dim">.${esc(H.value.split(".")[1])}</span></span></div>
+    <div class="type-row"><span class="label-sm">Figure L · 56</span><span class="fig-l">${esc(AP.primeBtc.head[0][1])}</span></div>
+    <div class="type-row"><span class="label-sm">Figure M · 40</span><span class="fig-m">${esc(AP.lend.tiles[0].hero)}</span></div>
+    <div class="type-row"><span class="label-sm">Heading · 24</span><span class="h2">Your products</span></div>
+    <div class="type-row"><span class="label-sm">Title · 18</span><span class="h3">${esc(H.boost.title)}</span></div>
+    <div class="type-row"><span class="label-sm">Body · 15</span><span>${esc(H.boost.body)}</span></div>
+    <div class="type-row"><span class="label-sm">Label · 13</span><span class="label">${esc(H.label)}</span></div>
+    <div class="type-row"><span class="label-sm">Tabular · 15</span><span class="tnum">${esc(btcRow.value)} &nbsp; ${esc(btcRow.amount)} &nbsp; <span class="down">${esc(btcRow.d24)}</span></span></div>
+  </div>`)}
+
+  ${ks("Buttons", "Ink pill with disc · hairline pill · text", `
+    ${line("Primary", `${btn.primary("Deposit")}${btn.primary("Deposit", { sm: true })}`)}
+    ${line("Secondary", `${btn.secondary("Withdraw", { icon: "withdraw" })}${btn.secondary("Transfer", { icon: "transfer" })}${btn.secondary("Boost", { sm: true })}`)}
+    ${line("Ghost", `${btn.ghost("Share", { icon: "share" })}${btn.ghost("Explore", { icon: "arrow", after: true })}${btn.ghost("Add sub-account", { icon: "plus" })}`)}
+    ${line("Icon · 36", `${btn.icon("share", "Share")}${btn.icon("copy", "Copy")}${btn.icon("columns", "Columns")}${btn.icon("flip", "Switch what you pay and receive")}${btn.icon("close", "Close")}${btn.icon("chevron", "Next", { sm: true })}`)}
+    ${line("Wide", `<div style="width:420px">${btn.primary(AP.trade.cta, { wide: true })}</div>`)}`)}
+
+  ${ks("Controls", "Segmented, tabs, chips, switch", `
+    ${line("Segmented", `${seg(H.ranges, H.range)}${seg(AP.trade.modes, "Spot", "seg-l")}${seg(["Cards", "List"], "Cards")}`)}
+    ${line("Tabs", `<div style="flex:1">${tabs(H.tabs, "All assets")}</div>`)}
+    ${line("Chips", `<div class="group"><button class="chip">25%</button><button class="chip">50%</button><button class="chip">Max</button></div>`)}
+    ${line("Switch", `<button class="switch" role="switch" aria-checked="false"><i></i><span>Pro</span></button><button class="switch is-on" role="switch" aria-checked="true"><i></i><span>Pro</span></button>`)}`)}
+
+  ${ks("Inputs", "Amount with token menu · text field", `<div class="kit-two">
+    <div class="amount" style="border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)">
+      <div class="field-label"><span>${esc(AP.trade.pay.label)}</span></div>
+      <span class="amount-v">${esc(AP.trade.pay.amount)}</span>
+      <button class="token" aria-label="Choose the asset to pay with">${mark("USD", "mk-s")}<span>${esc(AP.trade.pay.sym)}</span>${px("caret", { size: 10 })}</button>
+      <div class="amount-foot"><span>${esc(AP.trade.pay.foot)}</span><span class="group"><span>${esc(AP.trade.pay.balance)}</span><button class="link-max">Max</button></span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:28px;padding-top:20px">
+      <label class="field"><span class="field-label"><span>Recipient's Arch address</span></span><span class="text-input"><span>Their Arch wallet address</span><button class="link-max">Paste</button></span></label>
+      <div class="group"><button class="chip">25%</button><button class="chip">50%</button><button class="chip">Max</button></div>
+    </div>
+  </div>`)}
+
+  ${ks("Table row", "Hairline rows, tabular figures", `<table class="tbl">
+    <colgroup><col><col style="width:132px"><col style="width:180px"><col style="width:96px"><col style="width:124px"><col style="width:44px"></colgroup>
+    <thead><tr>${H.assetColumns.map((c, i) => `<th class="${i === 1 ? "pl" : i ? "r" : ""}">${esc(c)}</th>`).join("")}<th></th></tr></thead>
+    <tbody><tr>
+      <td><div class="asset">${mark(btcRow.sym)}<div class="asset-t"><span>${esc(btcRow.name)}</span><small>${esc(btcRow.amount)}</small></div></div></td>
+      <td class="pl">${spark(btcRow.spark, { w: 88, h: 26 })}</td>
+      <td class="r ${dir(btcRow.dir)}">${move(btcRow.d24)}</td><td class="r up">${esc(btcRow.earning)}</td><td class="r">${esc(btcRow.value)}</td>
+      <td class="w-ch"><span class="ch">${px("chevron", { size: 12 })}</span></td></tr></tbody></table>`)}
+
+  ${ks("Badges", "Health in one vocabulary", `<div class="group" style="gap:12px">${badge("Healthy")}${badge("Watch")}${badge("At risk")}<span class="badge is-soon">soon</span><span class="badge is-test">test</span><span class="badge is-plain">${esc(AP.primeBtc.boost.badge)}</span></div>`)}
+
+  ${ks("Gauge, bars, sparkline", "LED cells light in sequence", `<div class="kit-two" style="align-items:end">
+    <div style="display:flex;gap:48px;align-items:flex-end">${gauge(H.risk.score, H.risk.word)}<div style="display:flex;flex-direction:column;gap:14px;padding-bottom:6px">
+      <span class="label-sm">Utilization</span><span style="display:inline-flex;gap:12px;align-items:center">${led(AP.lend.markets[0].util)}<span class="tnum">${AP.lend.markets[0].util}%</span></span>
+      <span class="label-sm" style="margin-top:8px">${esc(AP.primeBtc.hold.rowLabel)}</span><div style="width:220px">${led(45.6, 36, { wide: true })}</div></div></div>
+    <div style="display:flex;gap:40px;align-items:flex-end">
+      <div style="display:flex;flex-direction:column;gap:10px"><span class="label-sm">7 days · ${esc(H.assets[0].name)}</span>${spark(H.assets[0].spark, { w: 140, h: 40 })}</div>
+      <div style="display:flex;flex-direction:column;gap:10px"><span class="label-sm">Last 30 days · ${esc(AP.products.all[1].sym)}</span>${spark(AP.products.all[1].nav, { w: 180, h: 40, area: true })}</div>
+    </div></div>`)}
+
+  ${ks("Icons", "7×7 LED grids, drawn here. Hover to light", `
+    <div class="icons is-nav">${NAV.map(([k, n], i) => `<div class="ic cascade"><div class="pair">${px(k, { size: 28, led: true })}${px(k, { size: 28, led: true, cls: "is-lit" })}</div><span>${n}</span></div>`).join("")}</div>
+    <div class="icons">${ACT.map(([k, n]) => `<div class="ic"><div class="pair">${px(k, { size: 14 })}${px(k, { size: 28 })}</div><span>${n}</span></div>`).join("")}</div>
+    <div class="kit-line" style="border-top:0;padding-top:4px"><span class="kit-cap">Asset marks</span>${["BTC", "USD", "primeBTC", "primeUSD"].map((s) => `<span class="asset">${mark(s)}<span class="label">${s}</span></span>`).join("")}</div>`)}
+
+  ${ks("Signed out", "One floating instrument card", `<div class="card so-card">${px("home", { size: 28, led: true, cls: "is-lit" })}<h3 class="h2">See your portfolio</h3><div>${btn.primary("Connect wallet")}</div></div>`)}
+  `,
+});
+</script>
+</body>
+</html>

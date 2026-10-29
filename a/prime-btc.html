@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>primeBTC · Arch Prime</title>
+<link rel="stylesheet" href="style.css">
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+</head>
+<body>
+<script>
+const { AP, px, mark, btn, seg, tabs, badge, rows, led, chart, esc } = P;
+const B = AP.primeBtc;
+const TIPS = {
+  "7-day APY": "Annualised from the last 7 days of NAV per share, after fees.",
+  "30-day APY": "Annualised from the last 30 days of NAV per share, after fees.",
+  "Since start": "Annualised since the vault opened, after fees.",
+  "Sharpe ratio": "Return per unit of volatility, measured against lending the same asset.",
+  "Worst drop": "The largest fall in NAV per share from a peak, to date.",
+  "Room left": "What the vault can still take before it reaches its deposit cap.",
+};
+const gain = (s) => parseFloat(s.replace(/[^\d.]/g, ""));
+const maxGain = Math.max(gain(B.hold.rowValue), gain(B.boost.rowValue));
+
+const figs = B.head.map(([k, v, m], i) => `
+  <div class="pfig"><span class="label">${esc(k)}</span>
+    <div class="pfig-v"><span class="fig-l${i === 0 ? " or" : ""}" data-roll="${i * 120}">${esc(v)}</span><span class="up tnum" style="font-size:14px">${esc(m)}</span></div></div>`).join("");
+
+const offer = (o, primary) => `
+  <section class="offer">
+    <div class="offer-h"><h3 class="h3">${esc(o.title)}</h3>${o.badge ? `<span class="badge is-plain">${esc(o.badge)}</span>` : ""}</div>
+    <div class="offer-hero"><span class="fig-m" data-roll="${primary ? 260 : 380}">${esc(o.hero)}</span><span class="muted">${esc(o.heroUnit)}</span></div>
+    <div class="offer-yr">
+      <div class="row"><span>${esc(o.rowLabel)}</span><span class="tnum">${esc(o.rowValue)}</span></div>
+      ${led((gain(o.rowValue) / maxGain) * 100, 36, { wide: true, delay: primary ? 500 : 650 })}
+    </div>
+    <div>${primary ? btn.primary(o.cta) : btn.secondary(o.cta)}</div>
+  </section>`;
+
+const acc = B.disclosure.map((d, i) => `
+  <div class="acc${i === 0 ? " is-open" : ""}">
+    <button class="acc-h" aria-expanded="${i === 0}">
+      <span class="h3">${esc(d.title)}</span>
+      ${d.head.map(([k, v]) => `<span class="kv"><span>${esc(k)}</span><b>${esc(v)}</b></span>`).join("")}
+      <span class="ibtn ibtn-sm">${px("chevron", { size: 10 })}</span>
+    </button>
+    ${i === 0 ? `<div class="acc-b"><span class="label">Reported by the manager</span>${rows([
+      ["NAV per share", esc(B.head[1][1])],
+      ["Status", badge(d.head[1][1])],
+      ["Last report", esc(d.head[2][1])],
+    ], "is-closed")}</div>` : ""}
+  </div>`).join("");
+
+P.page({
+  active: "yield", sub: "prime-btc", title: B.name,
+  html: `
+  <header class="phead">
+    <div class="phead-t">${mark("primeBTC", "mk-l")}<h1>${esc(B.name)}</h1><span class="grow"></span>
+      ${btn.secondary("Vault", { sm: true })}</div>
+    <div class="pfigs">${figs}</div>
+    ${tabs(B.tabs, "Overview")}
+  </header>
+
+  <div class="split" style="margin-top:36px">
+    <div class="rise" style="--dl:100ms">
+      <div class="chart-bar">${seg(B.chartTabs, "APY")}${seg(B.ranges, "1M")}</div>
+      <div class="chart" id="apy-chart"></div>
+      <div class="stats">${B.stats.map(([k, v]) => `<div class="stat"><span class="label tip" title="${esc(TIPS[k])}">${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>
+    </div>
+    <aside class="rise" style="--dl:180ms" aria-label="Offer">
+      ${offer(B.hold, true)}
+      ${offer(B.boost, false)}
+    </aside>
+  </div>
+
+  <section class="acc-list rise" style="--dl:240ms" aria-label="Disclosure">
+    ${acc}
+  </section>`,
+  after() {
+    chart(document.getElementById("apy-chart"), {
+      series: B.apySeries, step: true, h: 280, axis: true, dot: "ink", label: "APY",
+      ref: B.avg30, refLabel: `30-day avg ${B.avg30}%`,
+      fmt: (v) => v.toFixed(1) + "%",
+    });
+  },
+});
+</script>
+</body>
+</html>

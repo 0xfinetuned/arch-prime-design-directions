@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prime Yield · Arch Prime</title>
+<link rel="stylesheet" href="night.css">
+</head>
+<body>
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+<script>
+(() => {
+  const { AP, px, mark, btn, seg, dir, chev, chart, esc } = NB;
+  const P = AP.products;
+  const tips = { "Earning per year": "The product's APY on its balance, in dollars, as the balance sheet states it." };
+
+  const yours = `<section class="card rise">
+    <div class="card-h"><h2 class="card-t">Your products</h2></div>
+    <div class="summary">${P.yours.summary.map(([k, v]) => `<div><div class="label"${tips[k] ? ` title="${esc(tips[k])}"` : ""}>${esc(k)}</div><div class="big" data-roll>${esc(v)}</div></div>`).join("")}</div>
+    <table class="tbl">
+      <thead><tr>${P.yours.columns.map((c, i) => `<th class="${i > 0 && i < 6 ? "r" : ""}">${esc(c)}</th>`).join("")}</tr></thead>
+      <tbody>${P.yours.rows.map((r) => `<tr>
+        <td><div class="asset">${mark(r.sym)}<div><b>${esc(r.sym)}</b><span>${esc(r.asset)}</span></div></div></td>
+        <td class="r up">${esc(r.apy)}</td>
+        <td class="r"><span class="faint">${esc(r.boost)}</span></td>
+        <td class="r">${esc(r.balance)}</td>
+        <td class="r d24 ${dir(r.dir)}">${esc(r.d24)}</td>
+        <td class="r">${esc(r.earned)}</td>
+        <td class="r" style="width:120px">${btn(r.action, "s", { size: "sm" })}</td>
+      </tr>`).join("")}</tbody>
+    </table>
+  </section>`;
+
+  const rangeIcon = { "Earn up to": "yield", "Boost up to": "transfer" };
+  const ranges = `<div class="ranges" style="margin-top:20px">${P.range.map(([k, v]) => `<section class="card range-t rise">
+      <div class="range-k"><span class="glow">${px(rangeIcon[k] || "yield")}</span><span class="label">${esc(k)}</span></div>
+      <div class="big" data-roll>${esc(v)}</div>
+    </section>`).join("")}</div>`;
+
+  const card = (p) => `<section class="card rise">
+    <a class="pc-h" href="${p.sym === "primeBTC" ? "prime-btc.html" : "#"}">${mark(p.sym, "lg")}<div><b>${esc(p.sym)}</b><span>${esc(p.asset)}</span></div>${chev()}</a>
+    <div class="pc-mid">
+      <div><div class="label" style="margin-bottom:12px">APY</div><div class="big" style="font-size:56px" data-roll>${esc(p.apy)}</div></div>
+      <div><div class="label pc-sp-l">Last 30 days</div>${chart({ series: p.nav, h: 84, label: "Last 30 days", padT: 12, padB: 6, padLo: 0.3, padHi: 0.2, dot: 9, fill: 0.13 })}</div>
+    </div>
+    <div class="pc-figs">
+      <div><div class="label">Total deposited</div><div class="sm" data-roll>${esc(p.tvl)}</div></div>
+      <div><div class="label">Boost up to</div><div class="sm" data-roll>${esc(p.boostUpTo)}</div></div>
+      <div><div class="label">${esc(p.apyAt[0])}</div><div class="sm" data-roll>${esc(p.apyAt[1])}</div></div>
+    </div>
+    <div class="btns">${btn("Deposit", "p")}${btn("Boost", "s", { icon: "transfer" })}</div>
+  </section>`;
+
+  NB.page("yield", `<h1 class="sr">Prime Yield</h1>
+    ${yours}
+    ${ranges}
+    <div class="sec-h"><h2 class="sec-t">All products</h2><div class="switch-row" style="display:flex;align-items:center;gap:12px"><span class="label">Show products as</span>${seg(["Cards", "List"], "Cards", "", "Show products as")}</div></div>
+    <div class="prod-grid">${P.all.map(card).join("")}</div>`, { title: "Prime Yield" });
+})();
+</script>
+</body>
+</html>

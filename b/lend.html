@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lend · Arch Prime</title>
+<link rel="stylesheet" href="night.css">
+</head>
+<body>
+<script src="../shared/data.js"></script>
+<script src="shell.js"></script>
+<script>
+(() => {
+  const { AP, px, mark, btn, gauge, led, chev, tile, esc } = NB;
+  const L = AP.lend;
+  const tips = {
+    "Borrowing power": "What your account can borrow now, at the market's rates. Spend it on a buy or a Boost; it shows up as a loan.",
+    Health: "Everything in this account backs every loan and Boost. 100 means nothing owed; 0 means liquidation.",
+    Lending: "Every deposit lends itself and earns the supply rate. Withdraw any time.",
+    Used: "How much of your borrowing power your loans already use.",
+  };
+  const tip = (k) => (tips[k] ? `<span class="tip" title="${esc(tips[k])}">i</span>` : "");
+  const ctaIcon = { Buy: "trade", Boost: "transfer", Borrow: "withdraw", "Pay back": "deposit", Withdraw: "withdraw" };
+
+  const tileHtml = (t) => {
+    const head = `<div class="card-h"><h2 class="card-t" style="display:flex;align-items:center;gap:8px">${esc(t.title)}${tip(t.title)}</h2></div>`;
+    if (t.gauge != null) return `<section class="card t4 rise">${head}
+      ${gauge(t.gauge, t.word, 196)}
+      <div class="rows" style="margin-top:20px">${t.rows.map(([k, v]) => `<div class="row"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>
+    </section>`;
+    const isUsed = (k) => k === "Used";
+    const subCls = t.title === "Lending" ? "up" : "sub";
+    return `<section class="card t4 rise">${head}
+      <div class="t4-hero mid" data-roll>${esc(t.hero)}</div>
+      <div class="${subCls}" style="font-size:13.5px">${esc(t.sub)}</div>
+      <div class="rows">${t.rows.map(([k, v]) => isUsed(k)
+        ? `<div class="row" style="flex-direction:column;align-items:stretch;gap:10px"><div style="display:flex;justify-content:space-between"><span class="k" style="display:flex;gap:6px;align-items:center">${esc(k)}${tip(k)}</span><span class="v">${esc(v)}</span></div>${led(parseFloat(v), 36, "fill")}</div>`
+        : `<div class="row"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>
+      <div class="btns">${t.ctas.map((c) => btn(c, "s", { size: "sm", icon: ctaIcon[c] })).join("")}</div>
+    </section>`;
+  };
+
+  const markets = `<section class="card rise" style="margin-top:20px">
+    <div class="card-h"><h2 class="card-t">Markets</h2></div>
+    <table class="tbl">
+      <thead><tr>${L.columns.map((c, i) => `<th class="${i > 0 && i !== 5 ? "r" : ""}">${esc(c)}</th>`).join("")}<th style="width:28px"></th></tr></thead>
+      <tbody>${L.markets.map((m) => `<tr>
+        <td><div class="asset">${mark(m.sym)}<div><b>${esc(m.name)}</b><span>${esc(m.sym)}</span></div></div></td>
+        <td class="r up">${esc(m.supply)}</td>
+        <td class="r">${esc(m.borrow)}</td>
+        <td class="r">${esc(m.supplied)}</td>
+        <td class="r">${esc(m.borrowed)}</td>
+        <td><span class="util">${led(m.util, 20)}<span class="tnum" style="font-size:13.5px">${m.util}%</span></span></td>
+        <td class="r"><span class="sub" style="display:block;font-size:12px">${esc(m.you[0])}</span><span class="${m.you[1] === "None" ? "faint" : ""}">${esc(m.you[1])}</span></td>
+        <td class="r">${chev()}</td>
+      </tr>`).join("")}</tbody>
+    </table>
+  </section>`;
+
+  NB.page("lend", `<h1 class="sr">Lend</h1>
+    <div class="quiet">${tile(AP.account.name)}<span>${esc(AP.account.name)}</span></div>
+    <div class="tiles4">${L.tiles.map(tileHtml).join("")}</div>
+    ${markets}`, { title: "Lend" });
+})();
+</script>
+</body>
+</html>

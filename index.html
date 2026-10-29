@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Arch Prime — three directions</title>
+<style>
+  @font-face { font-family: "PP Neue Montreal"; font-weight: 400; src: url("shared/fonts/PPNeueMontreal-Book.woff2") format("woff2"); }
+  body { margin: 0; padding: 56px 64px; background: #f7f7f7; color: #181818; font: 16px/1.5 "PP Neue Montreal", Helvetica, sans-serif; }
+  h1 { font-weight: 400; font-size: 56px; letter-spacing: -0.04em; margin: 0 0 40px; }
+  section { display: grid; grid-template-columns: 240px 1fr; gap: 32px; padding: 28px 0; border-top: 1px solid rgba(24,24,24,.1); }
+  h2 { font-weight: 400; font-size: 28px; letter-spacing: -0.03em; margin: 0; }
+  h3 { font-weight: 400; font-size: 15px; color: #5e6570; margin: 22px 0 8px; }
+  p { margin: 6px 0 14px; color: #5e6570; max-width: 60ch; }
+  a { color: inherit; margin-right: 18px; }
+  img { width: 100%; border-radius: 8px; }
+</style></head><body>
+<h1>Three directions, light and dark</h1>
+<script>
+  const D = [
+    ["a", "A · Paper", "The landing's light sections and its black footer: structure from hairlines and space, figures set like headlines, 7×7 LED icons."],
+    ["b", "B · Night", "The landing's night and its light twin: lifted panels on hairlines, luminous lines by night, crisp ink by day, LED icons."],
+    ["c", "C · Instrument", "The landing's floating product cards as the whole app: instrument cards, frame edges, mono captions, line icons with one orange pixel."],
+  ];
+  const P = [["home", "Home"], ["products", "Prime Yield"], ["prime-btc", "primeBTC"], ["trade", "Trade"], ["lend", "Lend"], ["kit", "Kit"]];
+  for (const [d, name, idea] of D) {
+    const links = (t) => P.map(([p, l]) => `<a href="${d}/${p}.html?theme=${t}">${l}</a>`).join("");
+    document.write(`<section><div><h2>${name}</h2></div><div><p>${idea}</p>
+      <h3>Light — ${links("light")}</h3><img src="shots/${d}-light-overview.png" alt="${name} light">
+      <h3>Dark — ${links("dark")}</h3><img src="shots/${d}-dark-overview.png" alt="${name} dark"></div></section>`);
+  }
+</script>
+</body></html>
