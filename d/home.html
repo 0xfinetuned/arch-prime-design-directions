@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home · Arch Prime</title>
+<link rel="stylesheet" href="style.css">
+<script src="../shared/data.js"></script>
+<script src="app.js"></script>
+</head>
+<body>
+<script>
+const { AP, icon, mark, btn, seg, tabs, badge, kvs, dir, move, orb, chart, spark, gauge, acard, esc } = H;
+const D = AP.home;
+const [whole, cents] = D.value.split(".");
+const ICON = { Transfer: "transfer", "Move funds": "move", Withdraw: "withdraw" };
+const me = AP.account.accounts.find((a) => a.name === AP.account.name);
+const card = acard(me.name, me.line);
+
+const assetRows = D.assets.map((a) => `
+  <tr>
+    <td><div class="asset">${mark(a.sym)}<div class="asset-t"><span>${esc(a.name)}</span><small>${esc(a.amount)}</small></div></div></td>
+    <td class="pl">${spark(a.spark, { w: 84, h: 30 })}</td>
+    <td class="r ${dir(a.dir)}">${move(a.d24)}</td>
+    <td class="r up">${esc(a.earning)}</td>
+    <td class="r">${esc(a.value)}</td>
+    <td class="w-ch"><span class="chev">${icon("chevron", { size: 16 })}</span></td>
+  </tr>`).join("");
+
+const TIP = {
+  "Earning per year": "What the account earns in a year at today's rates, in dollars: each holding's rate on its balance, less what the debt costs. BTC and dollars earn different rates, so there is no one rate for the total.",
+};
+const cols = D.columns.map((c, i) => `
+  <button class="col${i === 0 ? " is-on" : ""}${c.disabled ? " is-off" : ""}"${c.disabled ? ` title="${esc(c.disabled)}" aria-disabled="true"` : ""}>
+    <span class="col-h">${esc(c.title)}</span>
+    ${c.rows.map(([k, v]) => `<span class="kvx"><span${TIP[k] ? ` class="tip" title="${esc(TIP[k])}"` : ""}>${esc(k)}</span><b>${esc(v)}</b></span>`).join("")}
+  </button>`).join("");
+
+const accts = AP.account.accounts.map((a) => `
+  <label class="acct${a.name === AP.account.name ? " is-on" : ""}"><span class="radio${a.name === AP.account.name ? " is-on" : ""}"></span>
+    <span class="acct-t"><span>${esc(a.name)}</span><small>${esc(a.line)}</small></span>
+    <span class="acct-v">${esc(a.net)}</span></label>`).join("");
+
+H.page({
+  active: "home", title: "Home",
+  html: `
+  <h1 class="sr">Home</h1>
+  <section class="hero" aria-label="Account value">
+    ${orb()}
+    <div class="hero-l">
+      <span class="eyebrow rise">${esc(D.label)}</span>
+      <div class="fig-hero focus">${esc(whole)}<span class="dim">.${esc(cents)}</span></div>
+      <div class="hero-line rise" style="--dl:200ms">
+        <span class="pill-up">${esc(D.change.usd)}<span>${esc(D.change.pct)}</span></span>
+        ${H.btn.ghost("Share", { icon: "share" })}
+      </div>
+      <div class="group rise" style="--dl:280ms">
+        ${D.actions.map((a) => a === "Deposit" ? btn.primary(a) : btn.soft(a, { icon: ICON[a] })).join("")}
+      </div>
+    </div>
+    <div class="acard-wrap rise" style="--dl:160ms">${card.card}${card.alloc}${card.legend}</div>
+  </section>
+
+  <div class="lower" style="margin-top:0">
+    <section class="cu chart-cu rise" style="--dl:240ms" aria-label="Account value over time">
+      <div class="chart-bar"><span class="legend"><i></i>Account value</span>${seg(D.ranges, D.range)}</div>
+      <div class="chart" id="value-chart"></div>
+      <div class="cols">${cols}</div>
+    </section>
+    <aside class="rail" aria-label="Risk">
+      <section class="cu rise" id="risk" style="--dl:300ms">
+        <div class="rail-h"><a href="#risk">Risk ${icon("chevron", { size: 15 })}</a></div>
+        <div class="risk-g">${gauge(D.risk.score, D.risk.word, { size: 210 })}</div>
+        ${kvs([
+          [D.risk.rows[0][0], esc(D.risk.rows[0][1]), "What you owe as a share of what backs it."],
+          [D.risk.rows[1][0], esc(D.risk.rows[1][1]), "The loan-to-value at which the account can be liquidated."],
+          [D.risk.rows[2][0], esc(D.risk.rows[2][1]), "The BTC price at which the account can be liquidated."],
+        ])}
+      </section>
+      <section class="cu is-warm boost rise" style="--dl:360ms">
+        ${H.mark("primeBTC")}
+        <h3 class="h3">${esc(D.boost.title)}</h3>
+        <p>${esc(D.boost.body)}</p>
+        <div>${btn.soft(D.boost.cta)}</div>
+      </section>
+    </aside>
+  </div>
+
+  <div class="lower">
+    <section class="cu lists rise" style="--dl:320ms" aria-label="Lists">
+      <div class="lists-bar">${tabs(D.tabs, "All assets")}${btn.icon("columns", "Columns", { sm: true })}</div>
+      <table class="list">
+        <colgroup><col><col style="width:112px"><col style="width:158px"><col style="width:70px"><col style="width:104px"><col style="width:36px"></colgroup>
+        <thead><tr>
+          <th>${esc(D.assetColumns[0])}</th><th class="pl">${esc(D.assetColumns[1])}</th><th class="r">${esc(D.assetColumns[2])}</th>
+          <th class="r">${esc(D.assetColumns[3])}</th><th class="r">${esc(D.assetColumns[4])}</th><th class="w-ch"></th>
+        </tr></thead>
+        <tbody>${assetRows}</tbody>
+      </table>
+    </section>
+
+    <aside class="rail" aria-label="Accounts">
+      <section class="cu rise" style="--dl:420ms">
+        <div class="rail-h" style="margin-bottom:10px"><span>Accounts</span></div>
+        <div>${accts}</div>
+        <div style="padding-top:8px">${btn.ghost("Add sub-account", { icon: "plus" })}</div>
+      </section>
+    </aside>
+  </div>`,
+  after() {
+    chart(document.getElementById("value-chart"), {
+      series: D.series, h: 280, axis: true, label: "Account value",
+      fmt: (v) => "$" + (v / 1000).toFixed(1) + "K",
+      fmtTip: (v) => "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    });
+  },
+});
+</script>
+</body>
+</html>

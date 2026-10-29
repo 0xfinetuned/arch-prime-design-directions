@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prime Yield · Arch Prime</title>
+<link rel="stylesheet" href="style.css">
+<script src="../shared/data.js"></script>
+<script src="app.js"></script>
+</head>
+<body>
+<script>
+const { AP, icon, mark, btn, seg, kvs, dir, move, orb, spark, esc } = H;
+const D = AP.products;
+const [[balLabel, balValue], [earnedLabel, earnedValue], [yearLabel, yearValue]] = D.yours.summary;
+const [bw, bc] = balValue.split(".");
+
+const rows = D.yours.rows.map((r) => `
+  <tr>
+    <td><div class="asset">${mark(r.sym)}<div class="asset-t"><span>${esc(r.sym)}</span><small>${esc(r.asset)}</small></div></div></td>
+    <td class="r">${esc(r.apy)}</td>
+    <td class="r muted">${esc(r.boost)}</td>
+    <td class="r">${esc(r.balance)}</td>
+    <td class="r ${dir(r.dir)}">${move(r.d24)}</td>
+    <td class="r">${esc(r.earned)}</td>
+    <td class="r">${btn.soft(r.action, { sm: true })}</td>
+  </tr>`).join("");
+
+const cards = D.all.map((p, i) => `
+  <article class="cu prod is-hover rise" style="--dl:${360 + i * 80}ms">
+    <div class="prod-sky">
+      <span class="small lbl">Last 30 days</span>
+      <div class="apy"><span class="eyebrow">APY</span><span class="fig-l focus" style="--dl:${400 + i * 100}ms">${esc(p.apy)}</span></div>
+      ${spark(p.nav, { w: 210, h: 64, area: true, delay: 400 + i * 120 })}
+    </div>
+    <div class="prod-b">
+      <a class="prod-h" href="${p.sym === "primeBTC" ? "prime-btc.html" : "#"}">${mark(p.sym, "mk-l")}
+        <span class="asset-t grow"><span class="h3">${esc(p.sym)}</span><small>${esc(p.asset)}</small></span>
+        <span class="chev">${icon("chevron", { size: 18 })}</span></a>
+      ${kvs([["Total deposited", esc(p.tvl)], ["Boost up to", esc(p.boostUpTo)], [p.apyAt[0], esc(p.apyAt[1])]])}
+      <div class="group">${btn.primary("Deposit")}${btn.soft("Boost")}</div>
+    </div>
+  </article>`).join("");
+
+H.page({
+  active: "yield", title: "Prime Yield",
+  html: `
+  <h1 class="sr">Prime Yield</h1>
+  <div class="sec-h rise" style="margin-top:36px"><h2 class="title">Your products</h2></div>
+  <section class="cu yours rise" style="--dl:80ms" aria-label="Your products">
+    ${orb()}
+    <div class="summary">
+      <div class="kvy"><span class="eyebrow">${esc(balLabel)}</span><span class="fig-xl focus">${esc(bw)}<span class="dim">.${esc(bc)}</span></span></div>
+      <div class="kvy"><span class="eyebrow">${esc(earnedLabel)}</span><span class="fig-m focus" style="--dl:200ms">${esc(earnedValue)}</span></div>
+      <div class="kvy"><span class="eyebrow tip" title="The product's APY on its balance, in dollars, as the balance sheet states it.">${esc(yearLabel)}</span><span class="fig-m focus up" style="--dl:260ms">${esc(yearValue)}</span></div>
+    </div>
+    <table class="list lift">
+      <colgroup><col><col style="width:84px"><col style="width:84px"><col style="width:130px"><col style="width:190px"><col style="width:110px"><col style="width:140px"></colgroup>
+      <thead><tr>${D.yours.columns.map((c, i) => `<th class="${i ? "r" : ""}">${esc(c)}</th>`).join("")}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </section>
+
+  <section class="ranges" aria-label="Range">
+    <div class="cu rise" style="--dl:180ms"><span class="eyebrow">${esc(D.range[0][0])}</span><span class="fig-xl focus glowtext" style="--dl:300ms">${esc(D.range[0][1])}</span></div>
+    <div class="cu rise" style="--dl:240ms"><span class="eyebrow">${esc(D.range[1][0])}</span><span class="fig-xl focus" style="--dl:360ms">${esc(D.range[1][1])}</span></div>
+  </section>
+
+  <div class="sec-h rise" style="--dl:300ms"><h2 class="title">All products</h2><div class="group" style="gap:12px"><span class="eyebrow">Show products as</span>${seg(["Cards", "List"], "Cards")}</div></div>
+  <section class="prods" aria-label="All products">${cards}</section>`,
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lend · Arch Prime</title>
+<link rel="stylesheet" href="style.css">
+<script src="../shared/data.js"></script>
+<script src="app.js"></script>
+</head>
+<body>
+<script>
+const { AP, icon, mark, btn, kvs, bar, gauge, orb, esc } = H;
+const L = AP.lend;
+const TIPS = {
+  "Borrowing power": "What your account can borrow now, at the market's rates. Spend it on a buy or a Boost; it shows up as a loan.",
+  Health: "Everything in this account backs every loan and Boost. 100 means nothing owed; 0 means liquidation.",
+  Lending: "Every deposit lends itself and earns the supply rate. Withdraw any time.",
+  Used: "How much of your borrowing power your loans already use.",
+};
+const tile = (t, i) => {
+  const head = `<div class="tl-h"><span${TIPS[t.title] ? ` class="tip" title="${esc(TIPS[t.title])}"` : ""}>${esc(t.title)}</span></div>`;
+  const body = t.gauge != null
+    ? `<div class="gauge-wrap">${gauge(t.gauge, t.word, { size: 176, sw: 12, small: true })}</div>`
+    : `<div class="tl-hero"><span class="fig-m focus${i === 0 ? " glowtext" : ""}" style="--dl:${120 + i * 90}ms">${esc(t.hero)}</span><span class="${t.sub.startsWith("+") ? "up" : "muted"} tnum" style="font-size:14px">${esc(t.sub)}</span></div>`;
+  const r = kvs(t.rows.map(([k, v]) => [k, esc(v), TIPS[k]]));
+  const ctas = t.ctas ? `<div class="group">${t.ctas.map((c) => btn.soft(c, { sm: true })).join("")}</div>` : "";
+  return `<section class="cu tl${i === 2 ? " is-warm" : ""} rise" style="--dl:${80 + i * 70}ms" aria-label="${esc(t.title)}">${head}${body}${r}${ctas}</section>`;
+};
+
+const mkt = L.markets.map((m) => `
+  <tr>
+    <td><div class="asset">${mark(m.sym)}<span>${esc(m.name)}</span></div></td>
+    <td class="r up">${esc(m.supply)}</td>
+    <td class="r">${esc(m.borrow)}</td>
+    <td class="r">${esc(m.supplied)}</td>
+    <td class="r">${esc(m.borrowed)}</td>
+    <td class="pl"><span style="display:inline-flex;align-items:center;gap:12px">${bar(m.util)}<span>${m.util}%</span></span></td>
+    <td class="r"><small>${esc(m.you[0])}</small><span class="${m.you[1] === "None" ? "muted" : ""}">${esc(m.you[1])}</span></td>
+    <td class="w-ch"><span class="chev">${icon("chevron", { size: 16 })}</span></td>
+  </tr>`).join("");
+
+H.page({
+  active: "lend", title: "Lend",
+  html: `
+  <h1 class="sr">Lend</h1>
+  <section class="lend-top">
+    ${orb()}
+    <p class="eyebrow rise" style="position:relative;z-index:1;padding-left:4px">${esc(AP.account.name)}</p>
+    <div class="tiles">${L.tiles.map(tile).join("")}</div>
+  </section>
+
+  <div class="sec-h rise" style="--dl:300ms"><h2 class="title">Markets</h2></div>
+  <section class="cu markets rise" style="--dl:340ms" aria-label="Markets">
+    <table class="list">
+      <colgroup><col><col style="width:110px"><col style="width:110px"><col style="width:100px"><col style="width:100px"><col style="width:210px"><col style="width:130px"><col style="width:44px"></colgroup>
+      <thead><tr>${L.columns.map((c, i) => `<th class="${i === 0 ? "" : i === 5 ? "pl" : "r"}">${esc(c)}</th>`).join("")}<th class="w-ch"></th></tr></thead>
+      <tbody>${mkt}</tbody>
+    </table>
+  </section>`,
+});
+</script>
+</body>
+</html>

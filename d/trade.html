@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade · Arch Prime</title>
+<link rel="stylesheet" href="style.css">
+<script src="../shared/data.js"></script>
+<script src="app.js"></script>
+</head>
+<body>
+<script>
+const { AP, icon, mark, btn, seg, kvs, dir, orb, esc } = H;
+const T = AP.trade;
+const token = (sym, label) => `<button class="token" aria-label="${esc(label)}">${mark(sym, "mk-s")}<span>${esc(sym)}</span>${icon("caret", { size: 15 })}</button>`;
+const featured = T.featured.map((f) => `
+  <div class="feat-row">
+    <div class="asset">${mark(f.sym)}<div class="asset-t"><span>${esc(f.sym)}</span><small>${esc(f.name)}</small></div></div>
+    <div class="num"><span>${esc(f.price)}</span><small class="${dir(f.dir)}">${esc(f.move)}</small></div>
+  </div>`).join("");
+
+H.page({
+  active: "trade", title: "Trade", withTicker: true,
+  html: `
+  <h1 class="sr">Trade</h1>
+  <div class="mode-bar rise">
+    <div aria-label="Market">${seg(T.modes, "Spot", "seg-l")}</div>
+    <button class="switch" role="switch" aria-checked="false"><i></i><span>Pro</span></button>
+  </div>
+
+  <div class="desk">
+    ${orb()}
+    <section class="cu swap rise" style="--dl:80ms" aria-label="Swap">
+      <div class="well amount">
+        <div class="field-label"><span>${esc(T.pay.label)}</span></div>
+        <span class="amount-v focus" style="--dl:200ms">${esc(T.pay.amount)}</span>
+        ${token(T.pay.sym, "Choose the asset to pay with")}
+        <div class="amount-foot"><span>${esc(T.pay.foot)}</span><span class="group" style="gap:12px"><span>${esc(T.pay.balance)}</span><button class="link">Max</button></span></div>
+      </div>
+      <div class="flip">${btn.icon("flip", "Switch what you pay and receive", { raised: true })}</div>
+      <div class="well amount">
+        <div class="field-label"><span>${esc(T.receive.label)}</span></div>
+        <span class="amount-v focus" style="--dl:300ms">${esc(T.receive.amount)}</span>
+        ${token(T.receive.sym, "Choose the asset to receive")}
+        <div class="amount-foot"><span>${esc(T.receive.foot)}</span></div>
+      </div>
+      <div class="route">
+        <button class="route-h" aria-expanded="true"><span>${esc(T.route[0])}</span><span class="group"><span>${esc(T.route[1])}</span>${icon("caret", { size: 15 })}</span></button>
+        ${kvs(T.details.map(([k, v]) => [k, esc(v)]))}
+      </div>
+      ${btn.primary(T.cta, { wide: true })}
+    </section>
+
+    <aside class="cu feat rise" style="--dl:160ms" aria-label="Featured">
+      <h2 class="h3">Featured</h2>
+      ${featured}
+      <div style="padding:10px 10px 4px">${btn.ghost("Explore", { icon: "arrow", after: true })}</div>
+    </aside>
+  </div>`,
+});
+</script>
+</body>
+</html>
